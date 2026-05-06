@@ -6,13 +6,13 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 15:04:28 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/05 18:54:22 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/06 23:02:11 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-#include <stdlib.h>
-#include <ctype.h>
+// #include <stdlib.h>
+// #include <ctype.h>
 
 t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 {
@@ -39,36 +39,36 @@ t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 	return (new_list);
 }
 
-void	*make_uppercase(void *content)
-{
-	char	*str;
-	int		i;
+// void	*make_uppercase(void *content)
+// {
+// 	char	*str;
+// 	int		i;
 
-	str = ft_strdup((char *)content);
-	i = 0;
-	if (!str)
-		return (NULL);
-	while (str[i])
-	{
-		str[i] = toupper(str[i]);
-		i++;
-	}
-	return (str);
-}
+// 	str = ft_strdup((char *)content);
+// 	i = 0;
+// 	if (!str)
+// 		return (NULL);
+// 	while (str[i])
+// 	{
+// 		str[i] = toupper(str[i]);
+// 		i++;
+// 	}
+// 	return (str);
+// }
 
-void	del_content(void *content)
-{
-	free(content);
-}
+// void	del_content(void *content)
+// {
+// 	free(content);
+// }
 
-void	ft_print(t_list *tmp)
-{
-	while (tmp)
-	{
-		printf("- %s\n", (char *)tmp->content);
-		tmp = tmp->next;
-	}
-}
+// void	ft_print(t_list *tmp)
+// {
+// 	while (tmp)
+// 	{
+// 		printf("- %s\n", (char *)tmp->content);
+// 		tmp = tmp->next;
+// 	}
+// }
 
 // int	main(void)
 // {
