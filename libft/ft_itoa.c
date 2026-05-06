@@ -6,14 +6,14 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 21:11:35 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/05 18:43:35 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/06 22:50:20 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include <stdlib.h>
 
-int	ft_len(int n)
+static int	ft_len(int n)
 {
 	int	len;
 
