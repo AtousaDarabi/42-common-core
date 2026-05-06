@@ -6,13 +6,13 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/23 10:43:34 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/05 18:49:29 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:01:47 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 
-char	*ft_strrchr(char *str, char c)
+char	*ft_strrchr(const char *str, int c)
 {
 	char	*start;
 
