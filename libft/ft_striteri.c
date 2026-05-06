@@ -6,17 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 21:08:35 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/29 21:18:18 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/06 23:45:47 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-
-// void	my_func(unsigned int i, char *c)
-// {
-// 	if (*c >= 'a' && *c <= 'z')
-// 		*c = *c - 32;
-// }
+// #include <stdio.h>
 
 void	ft_striteri(char *s, void (*f)(unsigned int, char*))
 {
@@ -31,6 +25,12 @@ void	ft_striteri(char *s, void (*f)(unsigned int, char*))
 		i++;
 	}
 }
+
+// void	my_func(unsigned int i, char *c)
+// {
+// 	if (*c >= 'a' && *c <= 'z')
+// 		*c = *c - 32;
+// }
 
 // int	main()
 // {
