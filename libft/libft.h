@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/20 21:12:59 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/06 23:53:02 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/06 23:59:41 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int		ft_toupper(int c);
 int		ft_tolower(int c);
 char	*ft_strchr(char *str, char c);
 char	*ft_strrchr(char *str, char c);
-int		ft_strncmp(char *str1, char *str2, size_t n);
+int		ft_strncmp(const char *str1, const char *str2, size_t n);
 void	*ft_memchr(const void *ptr, int value, size_t n);
 int		ft_memcmp(const void *ptr1, const void *ptr2, size_t n);
 char	*ft_strnstr(const char *str, const char *substr, size_t len);

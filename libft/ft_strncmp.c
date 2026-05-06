@@ -6,13 +6,13 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/23 11:27:05 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/30 18:47:23 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/06 23:59:24 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 
-int	ft_strncmp(char *str1, char *str2, size_t n)
+int	ft_strncmp(const char *str1, const char *str2, size_t n)
 {
 	size_t	i;
 
