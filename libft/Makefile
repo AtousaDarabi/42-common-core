@@ -6,12 +6,12 @@
 #    By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/04/20 20:41:49 by adarabi           #+#    #+#              #
-#    Updated: 2026/05/05 18:52:15 by adarabi          ###   ########.fr        #
+#    Updated: 2026/05/07 00:30:54 by adarabi          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = libft.a
-CC = gcc
+CC = cc
 CFLAGS = -Wall -Wextra -Werror
 
 SRCS = ft_isalpha.c ft_isdigit.c ft_isalnum.c ft_isascii.c ft_isprint.c \
