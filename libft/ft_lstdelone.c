@@ -6,12 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 14:35:08 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/30 14:55:31 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:53:33 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-#include <stdlib.h>
 
 void	ft_lstdelone(t_list *lst, void (*del)(void *))
 {

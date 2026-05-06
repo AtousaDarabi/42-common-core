@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/20 21:12:59 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/07 00:49:50 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:54:19 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ size_t	ft_strlcpy(char *des, const char *src, size_t size);
 size_t	ft_strlcat(char *str1, const char *str2, size_t size);
 int		ft_toupper(int c);
 int		ft_tolower(int c);
-char	*ft_strchr(const char *str, char c);
+char	*ft_strchr(const char *str, int c);
 char	*ft_strrchr(const char *str, int c);
 int		ft_strncmp(const char *str1, const char *str2, size_t n);
 void	*ft_memchr(const void *ptr, int value, size_t n);

@@ -6,12 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/30 15:04:28 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/06 23:02:11 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:53:33 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-// #include <stdlib.h>
 // #include <ctype.h>
 
 t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))

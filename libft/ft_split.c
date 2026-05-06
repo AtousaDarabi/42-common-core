@@ -6,13 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 22:06:11 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/07 00:14:57 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:53:33 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-// #include <stdio.h>
-#include <stdlib.h>
 
 static int	ft_count_words(const char *s, char c)
 {
