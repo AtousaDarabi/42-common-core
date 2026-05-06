@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 21:19:40 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/29 21:34:33 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:32:05 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	ft_putchar_fd(char c, int fd)
 {
-	if (fd > 0)
+	if (fd >= 0)
 		write(fd, &c, 1);
 }
 
