@@ -6,11 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 11:56:57 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/05 18:52:09 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/06 23:52:31 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-int	ft_strlen(char const *c)
+int	ft_strlen(const char *c)
 {
 	int	count;
 
