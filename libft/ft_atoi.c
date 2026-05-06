@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/27 17:17:41 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/07 00:40:26 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:41:33 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ int	ft_atoi(const char *str)
 {
 	size_t	i;
 	int		sign;
-	long		number;
+	long	number;
 
 	i = 0;
 	sign = 1;
