@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/29 22:06:11 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/30 20:34:34 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:14:57 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 // #include <stdio.h>
 #include <stdlib.h>
 
-static int	ft_count_words(char const *s, char c)
+static int	ft_count_words(const char *s, char c)
 {
 	int	count;
 	int	i;
@@ -44,7 +44,7 @@ static char	**ft_free_all(char **str, int i)
 	return (NULL);
 }
 
-static char	**ft_fill_split(char **res, char const *s, char c)
+static char	**ft_fill_split(char **res, const char *s, char c)
 {
 	size_t	i;
 	size_t	j;
@@ -71,7 +71,7 @@ static char	**ft_fill_split(char **res, char const *s, char c)
 	return (res);
 }
 
-char	**ft_split(char const *s, char c)
+char	**ft_split(const char *s, char c)
 {
 	char	**res;
 
