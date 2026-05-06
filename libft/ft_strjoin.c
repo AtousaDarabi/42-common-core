@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 18:45:26 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/29 18:16:03 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/06 23:48:51 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char	*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin(const char *s1, const char *s2)
 {
 	size_t	total_len;
 	char	*str;
