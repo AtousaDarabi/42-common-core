@@ -6,13 +6,13 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 17:41:29 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/07 00:10:48 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:25:41 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-#include <stdio.h>
 #include <stdlib.h>
+// #include <stdio.h>
 
 char	*ft_substr(const char *s, unsigned int start, size_t len)
 {

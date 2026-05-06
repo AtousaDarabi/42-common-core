@@ -6,11 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/27 17:17:41 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/30 18:57:01 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:25:41 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
+#include <stdlib.h>
 
 int	ft_atoi(const char *str)
 {

@@ -6,12 +6,12 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/27 19:26:23 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/29 17:30:40 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:25:41 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-#include <stdio.h>
+#include <stdlib.h>
 #include <stdlib.h>
 
 void	*ft_calloc(size_t mem_count, size_t size)

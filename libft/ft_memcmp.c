@@ -6,11 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/23 17:01:36 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/29 17:22:04 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:25:41 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
+#include <stdlib.h>
 
 int	ft_memcmp(const void *ptr1, const void *ptr2, size_t n)
 {

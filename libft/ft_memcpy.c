@@ -6,11 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 22:45:19 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/29 16:43:36 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:25:41 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
+#include <stdlib.h>
 
 void	*ft_memcpy(void *des, const void *src, size_t size)
 {
