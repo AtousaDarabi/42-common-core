@@ -6,11 +6,13 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 11:56:57 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/06 23:52:31 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:28:37 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-int	ft_strlen(const char *c)
+#include <stdlib.h>
+
+size_t	ft_strlen(const char *c)
 {
 	int	count;
 
