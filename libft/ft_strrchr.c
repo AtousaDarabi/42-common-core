@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/23 10:43:34 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/07 00:01:47 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:05:53 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,18 @@
 
 char	*ft_strrchr(const char *str, int c)
 {
-	char	*start;
+	const char	*last_occurrence;
 
-	start = str;
-	if (*str == '\0')
-	{
-		if (c == '\0')
-			return ((char *)str);
-		return (NULL);
-	}
+	last_occurrence = NULL;
 	while (*str != '\0')
-		str++;
-	while (str >= start)
 	{
-		if (*str == c)
-			return ((char *)str);
-		else
-			str--;
+		if (*str == (char)c)
+			last_occurrence = str;
+		str++;
 	}
-	return (NULL);
+	if (*str == (char)c)
+		return ((char *)str);
+	return ((char *)last_occurrence);
 }
 
 // int main()
