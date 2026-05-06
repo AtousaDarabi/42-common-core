@@ -6,13 +6,14 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/20 21:12:59 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/07 00:54:19 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 01:01:14 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef LIBFT_H
 # define LIBFT_H
 # include <stdlib.h>
+# include <unistd.h>
 
 typedef struct s_list
 {
