@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/20 21:12:59 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/07 00:02:01 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:09:24 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void	*ft_calloc(size_t mem_count, size_t size);
 char	*ft_strdup(const char *str);
 char	*ft_substr(char const *s, unsigned int start, size_t len);
 char	*ft_strjoin(const char *s1, const char *s2);
-char	*ft_strtrim(char const *s1, char const *set);
+char	*ft_strtrim(const char *s1, const char *set);
 char	**ft_split(char const *s, char c);
 char	*ft_itoa(int n);
 char	*ft_strmapi(char const *s, char (*f)(unsigned int, char));

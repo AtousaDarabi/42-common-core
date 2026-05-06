@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 19:05:06 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/05 16:02:10 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/07 00:09:08 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <stdlib.h>
 // #include <stdio.h>
 
-static int	is_in_set(char c, char const *set)
+static int	is_in_set(char c, const char *set)
 {
 	size_t	i;
 
@@ -28,7 +28,7 @@ static int	is_in_set(char c, char const *set)
 	return (0);
 }
 
-char	*ft_strtrim(char const *s1, char const *set)
+char	*ft_strtrim(const char *s1, const char *set)
 {
 	size_t	start;
 	size_t	end;
