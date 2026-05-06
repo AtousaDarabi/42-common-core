@@ -6,14 +6,14 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 14:48:03 by adarabi           #+#    #+#             */
-/*   Updated: 2026/04/29 18:43:28 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/06 23:40:04 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include <stdlib.h>
 
-char	*ft_strdup(char *str)
+char	*ft_strdup(const char *str)
 {
 	char	*start;
 	char	*dest;
