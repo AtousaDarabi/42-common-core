@@ -9,6 +9,7 @@ This library serves as a versatile toolkit, providing reliable implementations o
 The project is divided into several parts:
 **Libc Functions:** Re-implementations of standard functions like `strlen`, `memset`, `memcpy`, `atoi`, etc.
 **Additional Functions:** Utility functions for string and memory manipulation not found in the standard library, such as `ft_substr`, `ft_strjoin`, and `ft_strtrim`.
+**Linked Lists:** Functions used to manipulate a linked list structure (`t_list`), including `ft_lstnew`, `ft_lstadd_front`, `ft_lstadd_back`, `ft_lstsize`, `ft_lstlast`, `ft_lstdelone`, `ft_lstclear`, `ft_lstiter`, and `ft_lstmap`. These are crucial for learning dynamic data structures.
 
 ## Technical Overview
 - **Language:** C
