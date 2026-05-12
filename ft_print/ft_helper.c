@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 15:44:01 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/12 23:03:33 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/12 23:06:22 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ int	ft_print_number(char c, long l, char *arr)
 		nbr = (int)l;
 	if (nbr < 0)
 	{
-		total += write(1, '-', 1);
+		total += write(1, "-", 1);
 		nbr = nbr * -1;
 	}
 	if (nbr / 10 == 0)
