@@ -6,12 +6,13 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 03:42:50 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/12 15:53:29 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/12 18:16:11 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FT_PRINTF_H
 # define FT_PRINTF_H
 # include <stddef.h>
+# include <stdarg.h>
 
 #endif
