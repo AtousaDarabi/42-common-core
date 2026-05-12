@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/24 03:22:42 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/12 16:05:15 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/12 22:44:54 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,4 +31,3 @@ char	*ft_strnstr(const char *str, const char *substr, size_t len)
 	}
 	return (NULL);
 }
-
