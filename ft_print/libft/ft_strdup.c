@@ -1,0 +1,28 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_strdup.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/28 14:48:03 by adarabi           #+#    #+#             */
+/*   Updated: 2026/05/12 16:04:35 by adarabi          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "libft.h"
+
+char	*ft_strdup(const char *str)
+{
+	char	*start;
+	char	*dest;
+
+	dest = (char *)malloc(ft_strlen(str) + 1);
+	if (!dest)
+		return (NULL);
+	start = dest;
+	while (*str)
+		*dest++ = *str++;
+	*dest = '\0';
+	return (start);
+}
