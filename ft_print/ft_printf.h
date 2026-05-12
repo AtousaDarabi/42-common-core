@@ -6,7 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 03:42:50 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/09 05:03:30 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/12 15:52:05 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef FT_PRINTF_H
+# define FT_PRINTF_H
+
+#endif
