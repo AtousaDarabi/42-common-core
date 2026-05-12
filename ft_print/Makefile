@@ -9,7 +9,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	make -C libft
 	ar	rcs	$(NAME)	$(OBJS)	libft/*.o
-.o: .c
+%.o: %.c
 	$(CC) $(FLAGS) -c $< -o $@
 
 clean:
