@@ -8,7 +8,7 @@ OBJS = $(SRCS:.c=.o)
 all: $(NAME)
 $(NAME): $(OBJS)
 	make -C libft
-	ar	src	$(NAME)	$(OBJS)	libft/*.o
+	ar	rcs	$(NAME)	$(OBJS)	libft/*.o
 .o: .c
 	$(CC) $(FLAGS) -c $< -o $@
 
