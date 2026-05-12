@@ -7,16 +7,17 @@ OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
 $(NAME): $(OBJS)
-	ar	src	$(NAME)	$(OBJS)
-%.o: %.c
+	make -C libft
+	ar	src	$(NAME)	$(OBJS)	libft/*.o
+.o: .c
 	$(CC) $(FLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o $(OBJS) 
+	rm -f $(OBJS)
+	rm -f libft/*.o
 
 fclean:
 	rm -f $(NAME)
+	rm -f libft/libft.a
 
 re: fclean all
-
-.PHONY: all clean fclean re
