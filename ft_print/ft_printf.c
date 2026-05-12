@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/08 15:27:01 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/12 23:20:52 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/13 00:01:02 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ static	int	ft_print_conversion(char c, va_list arg_list)
 	char	*str;
 	int		sum;
 
+	sum = 0;
 	if (c == 'a')
 		sum = write(1, "predefined text", 15);
 	if (c == 'c')
