@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 15:44:01 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/12 22:44:00 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/12 23:02:41 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ int	ft_print_pointer(void *ptr)
 	unsigned long	ptrnbr;
 	char			*str;
 
+	total = 0;
 	ptrnbr = (unsigned long)ptr;
 	if (ptrnbr == 0)
 		total += write(1, "(nil)", 1);
