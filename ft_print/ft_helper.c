@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 15:44:01 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/12 23:19:32 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/13 00:22:46 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,24 +40,27 @@ int	ft_print_hex_helper(unsigned long nbr, char *arr)
 
 int	ft_print_number(char c, long l, char *arr)
 {
-	long	nbr;
-	int		total;
+	unsigned long	nbr;
+	int				total;
 
 	total = 0;
 	if (c == 'u')
-		nbr = (unsigned long)l;
+		nbr = (unsigned long)(unsigned int)l;
 	else
-		nbr = (int)l;
-	if (nbr < 0)
 	{
-		total += write(1, "-", 1);
-		nbr = nbr * -1;
+		if ((int)l < 0)
+		{
+			total += write(1, "-", 1);
+			nbr = (unsigned long)(-(unsigned int)(int)l);  // ← fix here
+		}
+		else
+			nbr = (unsigned long)(int)l;
 	}
 	if (nbr / 10 == 0)
 		total += write(1, &arr[nbr % 10], 1);
 	else
 	{
-		total += ft_print_number(c, nbr / 10, arr);
+		total += ft_print_number(c, (long)(nbr / 10), arr);
 		total += write(1, &arr[nbr % 10], 1);
 	}
 	return (total);
