@@ -1,17 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_printf.h                                        :+:      :+:    :+:   */
+/*   ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/09 03:42:50 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/12 15:53:29 by adarabi          ###   ########.fr       */
+/*   Created: 2026/05/12 15:44:01 by adarabi           #+#    #+#             */
+/*   Updated: 2026/05/12 15:55:49 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_PRINTF_H
-# define FT_PRINTF_H
-# include <stddef.h>
+#include "ft_printf.h"
 
-#endif
+size_t strlen(const char *s)
+{
+    size_t count;
+
+    count = 0;
+    while (!s)
+        count++;
+    return (count);
+}
