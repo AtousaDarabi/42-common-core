@@ -6,34 +6,35 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/08 15:27:01 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/13 00:07:25 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/14 13:40:39 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
+static int	ft_print_str(char *str)
+{
+	if (str == NULL)
+		return (write(1, "(null)", 6));
+	return (write(1, str, ft_strlen(str)));
+}
+
 static	int	ft_print_conversion(char c, va_list arg_list)
 {
-	char	*str;
 	int		sum;
 
 	sum = 0;
 	if (c == 'c')
 		sum = ft_print_char(va_arg(arg_list, int));
 	if (c == 's')
-	{
-		str = va_arg(arg_list, char *);
-		if (str == NULL)
-			sum = write(1, "(null)", 6);
-		else
-			sum = write(1, str, ft_strlen(str));
-	}
+		sum = ft_print_str(va_arg(arg_list, char *));
 	if (c == 'x' || c == 'X')
 		sum = ft_print_hex(va_arg(arg_list, unsigned int), c);
 	if (c == 'd' || c == 'i')
-    	sum = ft_print_number(c, va_arg(arg_list, int), "0123456789");
+		sum = ft_print_number(c, va_arg(arg_list, int), "0123456789");
 	if (c == 'u')
-		sum = ft_print_number(c, (long)va_arg(arg_list, unsigned int), "0123456789");
+		sum = ft_print_number(c, (long)va_arg(arg_list, unsigned int),
+				"0123456789");
 	if (c == 'p')
 		sum = ft_print_pointer(va_arg(arg_list, void *));
 	if (c == '%')

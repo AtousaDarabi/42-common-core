@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 15:44:01 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/13 00:22:46 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/14 13:29:18 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ int	ft_print_number(char c, long l, char *arr)
 		if ((int)l < 0)
 		{
 			total += write(1, "-", 1);
-			nbr = (unsigned long)(-(unsigned int)(int)l);  // ← fix here
+			nbr = (unsigned long)(-(unsigned int)(int)l);
 		}
 		else
 			nbr = (unsigned long)(int)l;
