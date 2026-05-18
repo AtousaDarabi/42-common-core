@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/18 18:51:16 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/18 22:09:23 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/18 23:51:17 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,10 @@ char	*line_after(char *s)
 	}
 	str = malloc(sizeof(char) * (ft_strlen(s) - idx + 1));
 	if (!str)
+	{
+		free(s);
 		return (0);
+	}
 	idx++;
 	while (s[idx] != 0)
 		str[idx2++] = s[idx++];
@@ -61,41 +64,62 @@ char	*line_after(char *s)
 	return (str);
 }
 
-char	*fileread(int fd, char *s)
+static char	*read_loop(int fd, char *s, char *buff)
 {
-	char	*buff;
-	int		count;
+	int	count;
 
-	count = 999999;
-	buff = malloc(sizeof(char) * BUFFER_SIZE + 1);
-	if (!buff)
-		return (0);
-	while (!ft_chrfind(s, '\n') && count != 0)
+	count = 1;
+	while (!ft_chrfind(s, '\n') && count > 0)
 	{
 		count = read(fd, buff, BUFFER_SIZE);
 		if (count == -1)
 		{
-			free(buff);
-			return (0);
+			free(s);
+			return (NULL);
 		}
 		buff[count] = 0;
+		if (count == 0)
+			break ;
 		s = ft_strjoin(s, buff);
+		if (!s)
+			return (NULL);
 	}
+	return (s);
+}
+
+char	*fileread(int fd, char *s)
+{
+	char	*buff;
+
+	buff = malloc(BUFFER_SIZE + 1);
+	if (!buff)
+		return (0);
+	s = read_loop(fd, s, buff);
 	free(buff);
 	return (s);
 }
 
 char	*get_next_line(int fd)
 {
-	static char		*str[256];
-	char			*first_line;
+	static char	*str[256];
+	char		*first_line;
 
 	if (fd < 0 || fd >= 256 || BUFFER_SIZE <= 0)
 		return (0);
 	str[fd] = fileread(fd, str[fd]);
-	if (!str[fd])
-		return (0);
+	if (!str[fd] || !str[fd][0])
+	{
+		free(str[fd]);
+		str[fd] = NULL;
+		return (NULL);
+	}
 	first_line = get_first_line(str[fd]);
+	if (!first_line)
+	{
+		free(str[fd]);
+		str[fd] = NULL;
+		return (NULL);
+	}
 	str[fd] = line_after(str[fd]);
 	return (first_line);
 }

@@ -6,33 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/18 18:52:00 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/18 22:09:26 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/18 23:36:05 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-char	*ft_strjoin(char *s1, char *s2)
-{
-	size_t	len_s1;
-	size_t	len_s2;
-	char	*res;
-
-	if (!s1)
-	{
-		s1 = (char *)malloc(1 * sizeof(char));
-		s1[0] = '\0';
-	}
-	len_s1 = (ft_strlen((char *)s1));
-	len_s2 = (ft_strlen((char *)s2));
-	res = (char *)malloc((len_s1 + len_s2 + 1) * sizeof(char));
-	if (res == NULL)
-		return (NULL);
-	ft_strlcpy(res, s1, len_s1 + 1);
-	ft_strlcpy(&res[len_s1], s2, len_s2 + 1);
-	free(s1);
-	return (res);
-}
 
 size_t	ft_strlen(char *str)
 {
@@ -58,6 +36,33 @@ void	ft_strlcpy(char *dst, char *src, size_t size)
 		}
 		dst[i] = '\0';
 	}
+}
+
+char	*ft_strjoin(char *s1, char *s2)
+{
+	size_t	len_s1;
+	size_t	len_s2;
+	char	*res;
+
+	if (!s1)
+	{
+		s1 = malloc(1);
+		s1[0] = '\0';
+	}
+	if (!s2)
+	{
+		s2 = malloc(1);
+		s2[0] = '\0';
+	}
+	len_s1 = ft_strlen((char *)s1);
+	len_s2 = ft_strlen((char *)s2);
+	res = malloc(len_s1 + len_s2 + 1);
+	if (res == NULL)
+		return (NULL);
+	ft_strlcpy(res, s1, len_s1 + 1);
+	ft_strlcpy(&res[len_s1], s2, len_s2 + 1);
+	free(s1);
+	return (res);
 }
 
 int	ft_chrfind(char *str, int c)
