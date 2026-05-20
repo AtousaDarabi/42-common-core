@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/18 18:51:16 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/18 23:51:17 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/19 22:16:40 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ char	*get_first_line(char *s)
 	idx = 0;
 	while (s[idx] && s[idx] != '\n')
 		idx++;
-	str = malloc(sizeof(char) * (idx + 2));
+	str = malloc(sizeof(char) * (idx + (s[idx] == '\n') + 1));
 	if (!str)
-		return (0);
+		return (NULL);
 	idx = 0;
 	while (s[idx] && s[idx] != '\n')
 	{
@@ -37,52 +37,35 @@ char	*get_first_line(char *s)
 
 char	*line_after(char *s)
 {
-	char	*str;
-	int		idx;
-	int		idx2;
+	int	idx;
 
 	idx = 0;
-	idx2 = 0;
-	while (s[idx] != 0 && s[idx] != '\n')
+	while (s[idx] && s[idx] != '\n')
 		idx++;
 	if (!s[idx])
 	{
 		free(s);
-		return (0);
+		return (NULL);
 	}
-	str = malloc(sizeof(char) * (ft_strlen(s) - idx + 1));
-	if (!str)
-	{
-		free(s);
-		return (0);
-	}
-	idx++;
-	while (s[idx] != 0)
-		str[idx2++] = s[idx++];
-	str[idx2] = 0;
-	free(s);
-	return (str);
+	return (alloc_after(s, idx));
 }
 
 static char	*read_loop(int fd, char *s, char *buff)
 {
-	int	count;
+	size_t	len;
 
-	count = 1;
-	while (!ft_chrfind(s, '\n') && count > 0)
+	len = 0;
+	if (s)
+		len = ft_strlen(s);
+	while (1)
 	{
-		count = read(fd, buff, BUFFER_SIZE);
-		if (count == -1)
-		{
-			free(s);
+		buff[0] = '\0';
+		if (!do_read(fd, &s, buff, &len))
 			return (NULL);
-		}
-		buff[count] = 0;
-		if (count == 0)
+		if (buff[0] == '\0')
 			break ;
-		s = ft_strjoin(s, buff);
-		if (!s)
-			return (NULL);
+		if (ft_chrfind(buff, '\n'))
+			break ;
 	}
 	return (s);
 }
@@ -93,7 +76,10 @@ char	*fileread(int fd, char *s)
 
 	buff = malloc(BUFFER_SIZE + 1);
 	if (!buff)
-		return (0);
+	{
+		free(s);
+		return (NULL);
+	}
 	s = read_loop(fd, s, buff);
 	free(buff);
 	return (s);
@@ -105,7 +91,7 @@ char	*get_next_line(int fd)
 	char		*first_line;
 
 	if (fd < 0 || fd >= 256 || BUFFER_SIZE <= 0)
-		return (0);
+		return (NULL);
 	str[fd] = fileread(fd, str[fd]);
 	if (!str[fd] || !str[fd][0])
 	{
@@ -124,7 +110,22 @@ char	*get_next_line(int fd)
 	return (first_line);
 }
 
-// int main()
+// #include <fcntl.h>
+// #include <stdio.h>
+
+// int main(void)
 // {
-// 	return 0;
+//     int     fd;
+//     char    *line;
+
+//     fd = open("file-one.txt", O_RDONLY);
+//     if (fd < 0)
+//         return (1);
+//     while ((line = get_next_line(fd)) != NULL)
+//     {
+//         printf("%s", line);
+//         free(line);
+//     }
+//     close(fd);
+//     return (0);
 // }
