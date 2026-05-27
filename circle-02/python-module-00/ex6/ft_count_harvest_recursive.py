@@ -1,4 +1,4 @@
-def ft_count_harvest_recursive(val = None):
+def ft_count_harvest_recursive(val=None):
     if val == 0:
         return
     if (val is None):
