@@ -26,6 +26,17 @@ Each call to `get_next_line()` returns:
 - including the newline character (`\n`) if it exists
 - or `NULL` when the end of file is reached or an error occurs
 
+**Algorithm**
+
+The function uses a static array of pointers `str[4096]` — one slot per possible file descriptor. Between calls, any unprocessed bytes read from the fd are kept in `str[fd]`.
+
+Each call works in three steps:
+1. ***Read***: fill `str[fd]` by reading BUFFER_SIZE bytes at a time into a temporary buffer, joining each chunk onto `str[fd]`, stopping as soon as a `\n` is found in the buffer or EOF is reached.
+2. ***Extract***: scan `str[fd]` up to the first `\n` (or end of string), copy that as the return value.
+3. ***Trim***: store whatever comes after the `\n` back into `str[fd]` for the next call. If nothing remains, set `str[fd]` to NULL.
+
+This approach was chosen because it reads as little as possible per call, avoids re-reading already-buffered data, and handles any BUFFER_SIZE correctly without changing logic.
+
 
 # Instructions
 
