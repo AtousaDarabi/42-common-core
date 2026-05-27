@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 22:30:25 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/20 22:32:41 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/27 15:34:40 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ size_t	ft_strlen(char *str);
 int		ft_chrfind(char *str, int c);
 char	*get_next_line(int fd);
 char	*ft_strjoin(char *s1, size_t len_s1, char *s2, size_t len_s2);
-char	*fileread(int fd, char *s);
+char	*file_read(int fd, char *s);
 char	*get_first_line(char *s);
 
 #endif
