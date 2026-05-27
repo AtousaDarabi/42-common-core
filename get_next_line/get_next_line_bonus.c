@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 22:30:14 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/20 22:31:41 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/27 13:26:10 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,10 +87,10 @@ char	*fileread(int fd, char *s)
 
 char	*get_next_line(int fd)
 {
-	static char	*str[256];
+	static char	*str[4096];
 	char		*first_line;
 
-	if (fd < 0 || fd >= 256 || BUFFER_SIZE <= 0)
+	if (fd < 0 || fd >= 4096 || BUFFER_SIZE <= 0)
 		return (NULL);
 	str[fd] = fileread(fd, str[fd]);
 	if (!str[fd] || !str[fd][0])
