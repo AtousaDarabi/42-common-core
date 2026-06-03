@@ -6,14 +6,14 @@
 #    By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/09 17:56:19 by adarabi           #+#    #+#              #
-#    Updated: 2026/06/09 21:15:34 by adarabi          ###   ########.fr        #
+#    Updated: 2026/06/09 21:31:07 by adarabi          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = push_swap
 CC = cc
 CFLAGS = -Wall -Werror -Wextra
-SRCS = main.c parser.c disorder.c operations_1.c operations_2.c \
+SRCS = main.c parser.c disorder.c operations_one.c operations_two.c \
 		strategy_simple.c strategy_medium.c strategy_complex.c strategy_adaptive.c
 
 OBJS = $(SRCS:.c=.o)

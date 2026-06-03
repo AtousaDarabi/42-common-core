@@ -6,14 +6,14 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/09 21:09:13 by adarabi           #+#    #+#             */
-/*   Updated: 2026/06/09 21:09:58 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/09 21:32:19 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
 /* مقداردهی به ایندکس هر گره بر اساس ارزش عددی آن */
-void	assign_indexes(t_stack *a, int size)
+void	assign_indexes(t_stack *a)
 {
 	t_stack	*curr;
 	t_stack	*compare;
@@ -82,7 +82,7 @@ void	strategy_medium(t_stack **a, t_stack **b, t_bench *bnch, int size)
 	int	chunk_size;
 	int	i;
 
-	assign_indexes(*a, size);
+	assign_indexes(*a);
 	// بر اساس تئوری، سایز چانک مناسب برای ۱۰۰ عدد حدود ۱۵ الی ۲۰ هست
 	chunk_size = 15; 
 	i = 0;

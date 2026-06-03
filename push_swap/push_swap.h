@@ -6,13 +6,14 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/09 17:46:15 by adarabi           #+#    #+#             */
-/*   Updated: 2026/06/09 21:12:34 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/09 21:30:38 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PUSH_SWAP_H
 # define PUSH_SWAP_H
-#include <unistd.h>
+# include <unistd.h>
+# include <stdlib.h>
 
 typedef struct s_stack
 {
@@ -52,6 +53,7 @@ void	rrr(t_stack **a, t_stack **b, t_bench *bnch);
 double	compute_disorder(int *arr, int size);
 int		*parse_arguments(int argc, char **argv, t_stack **a, int *size);
 void	print_error_and_exit(t_stack **a, int *arr);
+void	strategy_simple(t_stack **a, t_stack **b, t_bench *bnch, int size);
 void	strategy_medium(t_stack **a, t_stack **b, t_bench *bnch, int size);
 void	strategy_complex(t_stack **a, t_stack **b, t_bench *bnch, int size);
 void	strategy_adaptive(t_stack **a, t_stack **b, t_bench *bnch, int size);
