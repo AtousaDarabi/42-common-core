@@ -1,5 +1,6 @@
 def ft_seed_inventory(seed_type: str, quantity: int, unit: str) -> None:
     name = seed_type.capitalize()
+    string = None
     match unit:
         case "packets":
             string= f"{name} seeds: {quantity} {unit} available"
