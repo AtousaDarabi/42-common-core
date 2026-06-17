@@ -8,6 +8,8 @@ def ft_seed_inventory(seed_type: str, quantity: int, unit: str) -> None:
             string= f"{name} seeds: {quantity} {unit} available"
         case "area":
             string= f"{name} seeds: covers {quantity} square meters"
+        case _:
+            string = None
     print(string)
 
 # ft_seed_inventory("tomato", 15, "packets")
