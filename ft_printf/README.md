@@ -39,6 +39,9 @@ This produces `libftprintf.a` at the root of the repository.
 * C `printf` man page
 * C `stdarg.h` / variadic functions — cppreference
 * 42 Norm
+* Artificial Intelligence tools were used during the development of this project as supportive learning and debugging resources.
+AI assistance was mainly used for understanding the project requirements and expected behavior
+
 
 ## algorithm and data structure ##
 

@@ -1,19 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_putchar_fd.c                                    :+:      :+:    :+:   */
+/*   ft_printf.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/29 21:19:40 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/12 16:04:02 by adarabi          ###   ########.fr       */
+/*   Created: 2026/05/09 03:42:50 by adarabi           #+#    #+#             */
+/*   Updated: 2026/05/28 21:00:34 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#ifndef FT_PRINTF_H
+# define FT_PRINTF_H
+# include <stddef.h>
+# include <stdarg.h>
+# include <unistd.h>
+# include "libft/libft.h"
 
-void	ft_putchar_fd(char c, int fd)
-{
-	if (fd >= 0)
-		write(fd, &c, 1);
-}
+int	ft_printf(const char *str, ...);
+int	ft_print_char(char c);
+int	ft_print_num(unsigned long nbr, char c);
+int	ft_print_number(char c, long l, char *arr);
+int	ft_print_pointer(void *ptr);
+
+#endif

@@ -21,3 +21,5 @@ fclean:
 	rm -f libft/libft.a
 
 re: fclean all
+
+.PHONY: all clean fclean re

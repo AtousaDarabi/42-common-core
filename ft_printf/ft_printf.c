@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/08 15:27:01 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/14 16:36:37 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/28 21:15:22 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,11 @@ static	int	ft_print_conversion(char c, va_list arg_list)
 	if (c == 's')
 		sum = ft_print_str(va_arg(arg_list, char *));
 	if (c == 'x' || c == 'X')
-		sum = ft_print_hex(va_arg(arg_list, unsigned int), c);
+		sum = ft_print_num(va_arg(arg_list, unsigned int), c);
 	if (c == 'd' || c == 'i')
-		sum = ft_print_number(c, va_arg(arg_list, int), "0123456789");
+		sum = ft_print_num(va_arg(arg_list, int), c);
 	if (c == 'u')
-		sum = ft_print_number(c, (long)va_arg(arg_list, unsigned int),
-				"0123456789");
+		sum = ft_print_num((long)va_arg(arg_list, unsigned int), c);
 	if (c == 'p')
 		sum = ft_print_pointer(va_arg(arg_list, void *));
 	if (c == '%')

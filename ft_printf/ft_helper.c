@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/12 15:44:01 by adarabi           #+#    #+#             */
-/*   Updated: 2026/05/14 13:29:18 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/05/28 21:22:58 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,51 +17,43 @@ int	ft_print_char(char c)
 	return (write(1, &c, 1));
 }
 
-int	ft_print_hex(unsigned long nbr, char c)
+int	ft_print_num(unsigned long nbr, char c)
 {
 	if (c == 'X')
-		return (ft_print_hex_helper(nbr, "0123456789ABCDEF"));
-	return (ft_print_hex_helper(nbr, "0123456789abcdef"));
-}
-
-int	ft_print_hex_helper(unsigned long nbr, char *arr)
-{
-	int	total;
-
-	if (nbr / 16 == 0)
-		total = write(1, &(arr[nbr % 16]), 1);
-	else
+		return (ft_print_number(c, nbr, "0123456789ABCDEF"));
+	if (c == 'x')
+		return (ft_print_number(c, nbr, "0123456789abcdef"));
+	if (c == 'd' || c == 'i')
+		return (ft_print_number(c, nbr, "0123456789"));
+	if (c == 'u')
 	{
-		total = ft_print_hex_helper(nbr / 16, arr);
-		total += write(1, &(arr[nbr % 16]), 1);
+		nbr = (unsigned long)(unsigned int)nbr;
+		return (ft_print_number(c, nbr, "0123456789"));
 	}
-	return (total);
+	return (0);
 }
 
 int	ft_print_number(char c, long l, char *arr)
 {
 	unsigned long	nbr;
 	int				total;
+	int				base;
 
 	total = 0;
-	if (c == 'u')
-		nbr = (unsigned long)(unsigned int)l;
-	else
+	base = ft_strlen(arr);
+	if ((c == 'd' || c == 'i') && (int)l < 0)
 	{
-		if ((int)l < 0)
-		{
-			total += write(1, "-", 1);
-			nbr = (unsigned long)(-(unsigned int)(int)l);
-		}
-		else
-			nbr = (unsigned long)(int)l;
+		total += write(1, "-", 1);
+		nbr = (unsigned long)(-(long)(int)l);
 	}
-	if (nbr / 10 == 0)
-		total += write(1, &arr[nbr % 10], 1);
+	else
+		nbr = (unsigned long)l;
+	if (nbr / base == 0)
+		total += write(1, &arr[nbr % base], 1);
 	else
 	{
-		total += ft_print_number(c, (long)(nbr / 10), arr);
-		total += write(1, &arr[nbr % 10], 1);
+		total += ft_print_number(c, (long)(nbr / base), arr);
+		total += write(1, &arr[nbr % base], 1);
 	}
 	return (total);
 }
@@ -78,7 +70,7 @@ int	ft_print_pointer(void *ptr)
 	else
 	{
 		total += write(1, "0x", 2);
-		total += ft_print_hex_helper(ptrnbr, "0123456789abcdef");
+		total += ft_print_number('p', ptrnbr, "0123456789abcdef");
 	}
 	return (total);
 }
