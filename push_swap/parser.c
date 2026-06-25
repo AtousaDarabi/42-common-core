@@ -5,113 +5,72 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/06/09 21:06:16 by adarabi           #+#    #+#             */
-/*   Updated: 2026/06/09 21:06:40 by adarabi          ###   ########.fr       */
+/*   Created: 2026/06/24 16:53:31 by adarabi           #+#    #+#             */
+/*   Updated: 2026/06/24 16:53:34 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
-void	print_error_and_exit(t_stack **a, int *arr)
+static int	has_duplicate(t_stack *stack, int num)
 {
-	t_stack	*tmp;
+	while (stack && stack->value != num)
+		stack = stack->next;
+	return (stack != NULL);
+}
 
-	if (arr)
-		free(arr);
-	while (a && *a)
-	{
-		tmp = (*a)->next;
-		free(*a);
-		*a = tmp;
-	}
-	write(2, "Error\n", 6);
+static void	handle_parse_error(t_stack **stack)
+{
+	free_stack(stack);
+	ft_putstr_fd("Error\n", 2);
 	exit(1);
 }
 
-static int	is_valid_number(char *str)
+static void	parse_token(char *token, t_stack **stack_a)
 {
-	int	i;
+	t_stack	*new;
+	int		val;
+	int		error;
 
-	i = 0;
-	if (str[i] == '-' || str[i] == '+')
-		i++;
-	if (!str[i])
-		return (0);
-	while (str[i])
-	{
-		if (str[i] < '0' || str[i] > '9')
-			return (0);
-		i++;
-	}
-	return (1);
+	error = 0;
+	val = ft_atoi(token, &error);
+	if (error || has_duplicate(*stack_a, val))
+		handle_parse_error(stack_a);
+	new = malloc(sizeof(t_stack));
+	if (!new)
+		handle_parse_error(stack_a);
+	new->value = val;
+	new->index = -1;
+	new->next = NULL;
+	stack_add_back(stack_a, new);
 }
 
-static long	ft_atoi_long(char *str, t_stack **a, int *arr)
+static void	parse_string(char *str, t_stack **stack_a)
 {
-	long	res;
-	int		sign;
+	char	token[32];
 	int		i;
 
-	res = 0;
-	sign = 1;
-	i = 0;
-	if (str[i] == '-' || str[i] == '+')
+	while (*str)
 	{
-		if (str[i] == '-')
-			sign = -1;
-		i++;
-	}
-	while (str[i])
-	{
-		res = res * 10 + (str[i] - '0');
-		if ((sign == 1 && res > 2147483647)
-			|| (sign == -1 && (-res) < -2147483648))
-			print_error_and_exit(a, arr);
-		i++;
-	}
-	return (res * sign);
-}
-
-static void	check_duplicate(t_stack *a, int val, int *arr)
-{
-	while (a)
-	{
-		if (a->value == val)
-			print_error_and_exit(&a, arr);
-		a = a->next;
+		while (*str == ' ')
+			str++;
+		if (!*str)
+			break ;
+		i = 0;
+		while (*str && *str != ' ')
+			token[i++] = *str++;
+		token[i] = '\0';
+		if (i > 0)
+			parse_token(token, stack_a);
 	}
 }
 
-int	*parse_arguments(int argc, char **argv, t_stack **a, int *size)
+void	init_program(char **argv, t_stack **stack_a)
 {
-	int		i;
-	int		*arr;
-	t_stack	*new_node;
-	t_stack	*curr;
-
-	*size = argc - 1;
-	arr = malloc(sizeof(int) * (*size));
-	if (!arr)
-		print_error_and_exit(a, NULL);
-	i = 0;
-	while (i < *size)
+	while (*argv)
 	{
-		if (!is_valid_number(argv[i + 1]))
-			print_error_and_exit(a, arr);
-		arr[i] = (int)ft_atoi_long(argv[i + 1], a, arr);
-		check_duplicate(*a, arr[i], arr);
-		new_node = malloc(sizeof(t_stack));
-		if (!new_node)
-			print_error_and_exit(a, arr);
-		new_node->value = arr[i];
-		new_node->index = 0;
-		new_node->next = NULL;
-		if (!*a)
-			*a = new_node;
-		else
-			curr->next = new_node;
-		curr = new_node;
-		i++;
+		if ((*argv)[0] != '\0')
+			parse_string(*argv, stack_a);
+		argv++;
 	}
-	return (arr);
 }

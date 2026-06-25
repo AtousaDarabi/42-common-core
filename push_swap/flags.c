@@ -1,33 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   disorder.c                                         :+:      :+:    :+:   */
+/*   flags.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/06/09 18:19:35 by adarabi           #+#    #+#             */
-/*   Updated: 2026/06/09 19:18:51 by adarabi          ###   ########.fr       */
+/*   Created: 2026/06/23 18:10:04 by adarabi           #+#    #+#             */
+/*   Updated: 2026/06/23 18:10:08 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
-double compute_disorder(int *arr, int size)
+int	check_flags(char *arg, t_bench *b, int *mode)
 {
-    int i, j;
-    double mistakes = 0;
-    double total_pairs = 0;
-
-    if (size <= 1)
-        return (0);
-    for (i = 0; i < size - 1; i++)
-    {
-        for (j = i + 1; j < size; j++)
-        {
-            total_pairs++;
-            if (arr[i] > arr[j])
-                mistakes++;
-        }
-    }
-    return (mistakes / total_pairs);
+	if (!arg || arg[0] != '-' || arg[1] != '-')
+		return (0);
+	if (arg[2] == 'b')
+	{
+		b->active = 1;
+		return (1);
+	}
+	if (arg[2] == 's')
+		*mode = 1;
+	else if (arg[2] == 'm')
+		*mode = 2;
+	else if (arg[2] == 'c')
+		*mode = 3;
+	else if (arg[2] == 'a')
+		*mode = 4;
+	else
+		return (0);
+	return (1);
 }
