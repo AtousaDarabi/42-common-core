@@ -6,13 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/23 18:13:16 by adarabi           #+#    #+#             */
-/*   Updated: 2026/06/23 18:13:19 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/26 11:30:23 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
-
-int	ft_printf(const char *format, ...);
 
 void	exec_swap(t_stack **a, t_stack **b, char type, t_bench *bnch)
 {

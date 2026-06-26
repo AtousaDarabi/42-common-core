@@ -135,7 +135,7 @@ The program prints `Error` to stderr and exits on:
 
 ### Test cases
 
-####
+#### Memory leaks check
 ```bash
 valgrind --leak-check=full --show-leak-kinds=all ./push_swap 4 67 3 1 89
 ```

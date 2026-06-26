@@ -6,11 +6,9 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/23 18:09:00 by jukohler          #+#    #+#             */
-/*   Updated: 2026/06/25 21:56:26 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/26 10:31:33 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-#include "push_swap.h"
 
 #include "push_swap.h"
 
@@ -35,21 +33,17 @@ int	main(int argc, char **argv)
 	t_stack	*b;
 	t_bench	bnch;
 	int		mode;
-	int 	i;
+	int		i;
 
 	if (argc < 2)
 		return (0);
 	i = 1;
 	while (i < argc)
 	{
-		if(argv[i][0] == '\0')
-		{
-			ft_putstr_fd("Error\n", 2);
-			return 1;
-		}
+		if (argv[i][0] == '\0')
+			return (ft_putstr_fd("Error\n", 2), 1);
 		i++;
 	}
-	
 	b = NULL;
 	init_and_parse(&argv, &a, &bnch, &mode);
 	if (a && !is_sorted(a))

@@ -6,13 +6,11 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/23 18:11:09 by adarabi           #+#    #+#             */
-/*   Updated: 2026/06/25 16:45:24 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/26 11:29:14 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
-
-int	ft_printf(const char *format, ...);
 
 static void	print_bench_ops(t_bench *b)
 {

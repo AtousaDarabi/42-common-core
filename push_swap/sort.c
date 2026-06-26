@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/23 18:20:51 by adarabi           #+#    #+#             */
-/*   Updated: 2026/06/23 18:20:54 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/26 18:51:56 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,65 @@ static void	sort_three(t_stack **a, t_stack **b, t_bench *bnch)
 		(exec_swap(a, b, 'a', bnch), exec_rotate(a, b, 'a', bnch));
 	else if (top < mid && mid > bot && top > bot)
 		exec_rev_rotate(a, b, 'a', bnch);
+}
+
+static void sort_fourth(t_stack **a, t_stack **b, t_bench *bnch)
+{
+    int	first;
+    int	second;
+    int	third;
+    int	fourth;
+
+    first = (*a)->value;
+    second = (*a)->next->value;
+    third = (*a)->next->next->value;
+    fourth = (*a)->next->next->next->value;
+
+    if (second < first && second < third && second < fourth)
+        exec_swap(a, b, 'a', bnch);
+    else if (third < first && third < second && third < fourth)
+    {
+        exec_rotate(a, b, 'a', bnch);
+        exec_rotate(a, b, 'a', bnch);
+    }
+    else if (fourth < first && fourth < second && fourth < third)
+        exec_rev_rotate(a, b, 'a', bnch);
+    exec_push(b, a, 'b', bnch);
+    sort_three(a, b, bnch);
+    exec_push(a, b, 'a', bnch);
+}
+
+static void sort_fifth(t_stack **a, t_stack **b, t_bench *bnch)
+{
+    int first;
+    int second;
+    int third;
+    int fourth;
+	int fifth;
+
+    first = (*a)->value;
+    second = (*a)->next->value;
+    third = (*a)->next->next->value;
+    fourth = (*a)->next->next->next->value;
+	fifth = (*a)->next->next->next->next->value;
+
+    if (second < first && second < third && second < fourth && second < fifth)
+        exec_swap(a, b, 'a', bnch);
+    else if (third < first && third < second && third < fourth && third < fifth)
+    {
+        exec_rotate(a, b, 'a', bnch);
+        exec_rotate(a, b, 'a', bnch);
+    }
+    else if (fourth < first && fourth < second && fourth < third && fourth < fifth)
+	{
+        exec_rev_rotate(a, b, 'a', bnch);
+        exec_rev_rotate(a, b, 'a', bnch);
+    }
+	else if (fifth < first && fifth < second && fifth < third && fifth < fourth)
+		exec_rev_rotate(a, b, 'a', bnch);	
+    exec_push(b, a, 'b', bnch);
+    sort_fourth(a, b, bnch);
+    exec_push(a, b, 'a', bnch);
 }
 
 static void	insert_one(t_stack **a, t_stack **b, t_bench *bnch, int size)
@@ -59,7 +118,11 @@ void	strategy_simple(t_stack **a, t_stack **b, t_bench *bnch)
 		return (exec_swap(a, b, 'a', bnch));
 	if (size == 3 && !is_sorted(*a))
 		return (sort_three(a, b, bnch));
-	while (stack_size(*a) > 3)
+	if (size == 4 && !is_sorted(*a))
+		return (sort_fourth(a, b, bnch));
+	if (size == 5 && !is_sorted(*a))
+		return (sort_fifth(a, b, bnch));
+	while (stack_size(*a) > 5)
 		exec_push(b, a, 'b', bnch);
 	sort_three(a, b, bnch);
 	while (*b)

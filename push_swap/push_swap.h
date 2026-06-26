@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/23 18:07:53 by jukohler          #+#    #+#             */
-/*   Updated: 2026/06/25 21:56:30 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/26 11:29:28 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ typedef struct s_bench
 	double	disorder;
 }	t_bench;
 
+int		ft_printf(const char *format, ...);
 void	init_program(char **argv, t_stack **stack_a);
 
 int		stack_size(t_stack *stack);

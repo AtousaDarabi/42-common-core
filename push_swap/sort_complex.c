@@ -6,7 +6,7 @@
 /*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/23 18:16:19 by jukohler          #+#    #+#             */
-/*   Updated: 2026/06/25 21:56:42 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/26 18:51:23 by adarabi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void	strategy_adaptive(t_stack **a, t_stack **b, t_bench *bnch)
 	int		size;
 
 	size = stack_size(*a);
-	if (size <= 3)
+	if (size <= 5)
 	{
 		strategy_simple(a, b, bnch);
 		return ;

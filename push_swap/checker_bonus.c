@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   checker_bonus.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adarabi <adarabi@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jukohler <jukohler@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/24 00:00:00 by adarabi           #+#    #+#             */
-/*   Updated: 2026/06/25 21:56:01 by adarabi          ###   ########.fr       */
+/*   Updated: 2026/06/26 11:10:27 by jukohler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ int	read_line(char *buf, int size)
 	return (i > 0);
 }
 
-static void	apply_op_extend(char *op, t_stack **a, t_stack **b)
+static int	apply_op_extend(char *op, t_stack **a, t_stack **b)
 {
 	if (op[0] == 'r' && op[1] == 'r' && op[2] == 'a' && op[3] == '\n')
 		reverse_rotate(a);
@@ -43,6 +43,9 @@ static void	apply_op_extend(char *op, t_stack **a, t_stack **b)
 		reverse_rotate(a);
 		reverse_rotate(b);
 	}
+	else
+		return (0);
+	return (1);
 }
 
 int	apply_op(char *op, t_stack **a, t_stack **b)
@@ -70,7 +73,7 @@ int	apply_op(char *op, t_stack **a, t_stack **b)
 		rotate(b);
 	}
 	else
-		apply_op_extend(op, a, b);
+		return (apply_op_extend(op, a, b));
 	return (1);
 }
 
@@ -103,6 +106,7 @@ int	main(int argc, char **argv)
 	t_stack	*a;
 	t_stack	*b;
 	int		i;
+	int		res;
 
 	a = NULL;
 	b = NULL;
@@ -120,8 +124,8 @@ int	main(int argc, char **argv)
 	}
 	init_program(argv + 1, &a);
 	normalize_indices(a);
-	run_checker(&a, &b);
+	res = run_checker(&a, &b);
 	free_stack(&a);
 	free_stack(&b);
-	return (0);
+	return (res);
 }
