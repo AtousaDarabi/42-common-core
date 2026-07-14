@@ -1,0 +1,22 @@
+venv/
+env/
+matrix_env/
+.venv/
+
+.env
+.env.local
+.env.*.local
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.mypy_cache/
+.pytest_cache/
+
+ex1/matrix_analysis.png
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
