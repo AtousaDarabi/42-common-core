@@ -33,6 +33,7 @@ CELL_W = 2
 
 def sgr(code: str, text: str) -> str:
     """!
-    @brief Wraps `text` in the given SGR colour code, resetting immediately after.
+    @brief Wraps `text` in the given SGR colour code, resetting
+           immediately after.
     """
     return f"\033[{code}m{text}{RESET}"

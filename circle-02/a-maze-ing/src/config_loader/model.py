@@ -17,7 +17,8 @@ class MazeConfig:
     @param output_file Path of the file the maze will be written to.
     @param perfect Whether the maze must have exactly one path entry<->exit.
     @param seed Optional RNG seed for reproducible generation.
-    @param algorithm Optional generation algorithm name (DFS/KRUSKAL/PRIM/RANDOM).
+    @param algorithm Optional generation algorithm name
+           (DFS/KRUSKAL/PRIM/RANDOM).
     @param display Optional display mode, "ASCII" (default) or "MLX".
     @param animate Optional bonus: animate maze generation step by step
            instead of showing only the finished maze (default True).

@@ -3,8 +3,9 @@
 import shutil
 import sys
 import time
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional
 
+from mazegen import MazeGenerator
 from src.config_loader import MazeConfig
 from src.display import CELL_W, COLOR_NAMES, render_ascii
 
@@ -27,7 +28,9 @@ def ascii_animation_fits_terminal(config: MazeConfig) -> bool:
 
 
 def make_animator(
-    config: MazeConfig, current: dict, color_idx: Callable[[], int]
+    config: MazeConfig,
+    current: Dict[str, MazeGenerator],
+    color_idx: Callable[[], int],
 ) -> Optional[Callable[[], None]]:
     """!
     @brief Builds an `on_step` callback that redraws the in-progress maze in

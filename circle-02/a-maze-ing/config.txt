@@ -1,6 +1,6 @@
 # Mandatory keys
-WIDTH=20
-HEIGHT=10
+WIDTH=2000
+HEIGHT=1000
 ENTRY=1,1
 EXIT=19,9
 OUTPUT_FILE=maze.txt
@@ -13,7 +13,7 @@ SEED=42
 ALGORITHM=DFS
 # DISPLAY: ASCII (default, terminal) or MLX (graphical window; run `make mlx`
 # first to compile MiniLibX -- falls back to ASCII if that isn't available).
-DISPLAY=mlx
+DISPLAY=MLX
 # ANIMATE: True (the default) to watch the maze get carved out wall-by-wall
 # on each regenerate ('r') instead of only seeing the finished maze; set to
 # False to disable.

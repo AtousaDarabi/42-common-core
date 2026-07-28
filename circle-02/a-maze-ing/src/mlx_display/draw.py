@@ -12,7 +12,8 @@ from .colors import (
 
 def fill_cell(mlx: MLX, win: int, cx: int, cy: int, color: int) -> None:
     """!
-    @brief Fills cell (cx, cy)'s interior (inset by 1px so wall lines stay visible).
+    @brief Fills cell (cx, cy)'s interior (inset by 1px so wall lines
+           stay visible).
     """
     x0, y0 = cx * CELL_SIZE + 1, cy * CELL_SIZE + 1
     for dy in range(CELL_SIZE - 2):
@@ -20,7 +21,9 @@ def fill_cell(mlx: MLX, win: int, cx: int, cy: int, color: int) -> None:
             mlx.pixel_put(win, x0 + dx, y0 + dy, color)
 
 
-def draw_wall(mlx: MLX, win: int, cx: int, cy: int, side: int, color: int) -> None:
+def draw_wall(
+    mlx: MLX, win: int, cx: int, cy: int, side: int, color: int
+) -> None:
     """!
     @brief Draws a single wall segment on the given side of cell (cx, cy).
     """

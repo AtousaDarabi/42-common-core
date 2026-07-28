@@ -6,13 +6,14 @@ display in `src/display/`. Same interactions: regenerate, show/hide path,
 cycle wall colour, quit -- plus the window's own X (close) button.
 
 Split across this package: `colors.py` (palette + constants), `debug_log.py`
-(TEMP diagnostics logger), `draw.py`/`render.py` (pixel drawing), `session.py`
-and its mixins (`redraw_mixin.py`, `gen_animation.py`, `solve_animation.py`,
-`input_handlers.py`) for the interactive window state, and this module for
-the public `run_mlx_display()` entry point.
+(module logger, silent unless the caller configures `logging`), `draw.py`/
+`render.py` (pixel drawing), `session.py` and its mixins (`redraw_mixin.py`,
+`gen_animation.py`, `solve_animation.py`, `input_handlers.py`) for the
+interactive window state, and this module for the public
+`run_mlx_display()` entry point.
 """
 
-from typing import Callable, Optional, Set, Tuple
+from typing import Callable, List, Optional, Set, Tuple
 
 from src.mlx_bindings import MLX, MLXUnavailableError
 
@@ -28,7 +29,7 @@ def run_mlx_display(
     entry: Tuple[int, int],
     exit_cell: Tuple[int, int],
     regenerate: Callable[..., None],
-    get_grid: Callable[[], list],
+    get_grid: Callable[[], List[List[int]]],
     get_path_cells: Callable[[], Set[Tuple[int, int]]],
     animate: bool = False,
     animate_delay: float = 0.03,

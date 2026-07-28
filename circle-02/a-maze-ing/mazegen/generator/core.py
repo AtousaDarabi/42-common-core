@@ -24,15 +24,21 @@ class MazeGenerator(AlgorithmDispatchMixin, PatternMixin, LoopMixin):
     """
 
     def __init__(
-        self, w: int, h: int, seed: Optional[int] = None, algorithm: str = "DFS"
+        self,
+        w: int,
+        h: int,
+        seed: Optional[int] = None,
+        algorithm: str = "DFS",
     ) -> None:
         """!
-        @brief Initializes the MazeGenerator with dimensions and configuration.
+        @brief Initializes the MazeGenerator with dimensions and
+               configuration.
         @param w Maze width.
         @param h Maze height.
         @param seed Optional seed for reproducible generation.
         @param algorithm One of "DFS", "KRUSKAL", "PRIM" or "RANDOM".
-        @details Every cell starts fully walled (`grid[y][x] == ALL_WALLS_CLOSED`).
+        @details Every cell starts fully walled
+                 (`grid[y][x] == ALL_WALLS_CLOSED`).
                  `self._rng` is a private `random.Random` used only to pick
                  an algorithm for "RANDOM"; the algorithm modules themselves
                  draw from the seeded global `random` module instead.
@@ -41,7 +47,9 @@ class MazeGenerator(AlgorithmDispatchMixin, PatternMixin, LoopMixin):
         self.grid: List[List[int]] = [
             [ALL_WALLS_CLOSED for _ in range(w)] for _ in range(h)
         ]
-        self.visited: List[List[bool]] = [[False for _ in range(w)] for _ in range(h)]
+        self.visited: List[List[bool]] = [
+            [False for _ in range(w)] for _ in range(h)
+        ]
         self.algorithm_flag = algorithm.upper()
         self.solution_coords: List[Tuple[int, int]] = []
         self._blocked_cells: Set[Tuple[int, int]] = set()
@@ -60,7 +68,7 @@ class MazeGenerator(AlgorithmDispatchMixin, PatternMixin, LoopMixin):
     ) -> None:
         """!
         @brief Generates the maze using the selected algorithm and
-        finds the solution path.
+               finds the solution path.
         @param entry Starting coordinates of the maze.
         @param exit_cell Target coordinates of the maze.
         @param perfect If True, the maze is a spanning tree (exactly one path
@@ -85,9 +93,7 @@ class MazeGenerator(AlgorithmDispatchMixin, PatternMixin, LoopMixin):
         active_algo = self._resolve_algorithm()
         self._run_spanning_tree(active_algo, entry, blocked_count, on_step)
 
-        if not is_fully_connected(
-            self.grid, self.w, self.h, blocked_count
-        ):
+        if not is_fully_connected(self.grid, self.w, self.h, blocked_count):
             raise ValueError(
                 "Generated maze is not fully connected; this indicates a bug "
                 "in the generation algorithm."

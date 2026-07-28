@@ -1,9 +1,15 @@
 """Solve-animation mixin: redraws the window as the BFS solver explores it."""
 
 import time
-from typing import Callable, Optional, Set, Tuple
+from typing import Callable, Dict, Optional, Set, Tuple
 
-from .colors import CURRENT_COLOR, ENTRY_COLOR, EXIT_COLOR, FRONTIER_COLOR, TRAIL_COLOR
+from .colors import (
+    CURRENT_COLOR,
+    ENTRY_COLOR,
+    EXIT_COLOR,
+    FRONTIER_COLOR,
+    TRAIL_COLOR,
+)
 from .draw import fill_cell
 from .session_base import SessionAttrs
 
@@ -48,7 +54,7 @@ class SolveAnimationMixin(SessionAttrs):
         frame_interval = max(1, total_cells // 100)
         counter = {"n": 0}
         frontier_cells: Set[Tuple[int, int]] = set()
-        current_cell: dict = {"cell": None}
+        current_cell: Dict[str, Optional[Tuple[int, int]]] = {"cell": None}
 
         def redraw_cell(cell: Tuple[int, int]) -> None:
             x, y = cell

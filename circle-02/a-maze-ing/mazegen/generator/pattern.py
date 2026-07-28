@@ -15,7 +15,8 @@ class PatternMixin(GeneratorAttrs):
         self, entry: Tuple[int, int], exit_cell: Tuple[int, int]
     ) -> int:
         """!
-        @brief Marks cells associated with the '42' pattern as visited to block them.
+        @brief Marks cells associated with the '42' pattern as
+               visited to block them.
         @param entry Entry coordinates, kept free even if the pattern would
                otherwise cover them.
         @param exit_cell Exit coordinates, kept free even if the pattern would
@@ -41,8 +42,8 @@ class PatternMixin(GeneratorAttrs):
 
         if not can_fit_pattern(self.w, self.h):
             print(
-                f"Warning: maze size {self.w}x{self.h} is too small to display "
-                "the '42' pattern; it will be omitted."
+                f"Warning: maze size {self.w}x{self.h} is too small "
+                "to display the '42' pattern; it will be omitted."
             )
             return 0
 
@@ -53,10 +54,16 @@ class PatternMixin(GeneratorAttrs):
         candidate_blocked = set()
         for dx, dy in get_42_offsets():
             nx, ny = start_x + dx, start_y + dy
-            if 0 <= nx < self.w and 0 <= ny < self.h and (nx, ny) not in reserved:
+            if (
+                0 <= nx < self.w
+                and 0 <= ny < self.h
+                and (nx, ny) not in reserved
+            ):
                 candidate_blocked.add((nx, ny))
 
-        if not pattern_leaves_maze_connected(self.w, self.h, candidate_blocked):
+        if not pattern_leaves_maze_connected(
+            self.w, self.h, candidate_blocked
+        ):
             print(
                 f"Warning: the '42' pattern cannot be placed in a "
                 f"{self.w}x{self.h} maze without isolating cells; it will "

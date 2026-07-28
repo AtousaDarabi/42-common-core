@@ -1,10 +1,2 @@
 [flake8]
-max-line-length = 88
-exclude =
-    .venv,
-    mlx,
-    __pycache__,
-    .mypy_cache,
-    dist,
-    build,
-    *.egg-info
+exclude = mlx,build,dist,.venv

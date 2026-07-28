@@ -30,8 +30,9 @@ def build_and_write(
     @param on_visit Optional callback forwarded to `MazeGenerator.generate()`,
            invoked with each cell the BFS solver makes "current" (see there
            for the bonus "animate solving" hook).
-    @param on_frontier Optional callback forwarded to `MazeGenerator.generate()`,
-           invoked with each cell the BFS solver newly discovers/enqueues.
+    @param on_frontier Optional callback forwarded to
+           `MazeGenerator.generate()`, invoked with each cell the BFS
+           solver newly discovers/enqueues.
     @return The MazeGenerator instance holding the freshly generated maze.
     """
     maze = MazeGenerator(

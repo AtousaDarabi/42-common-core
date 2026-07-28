@@ -1,29 +1,34 @@
 # Python
-.venv/
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-.Python
 *.egg-info/
-dist/
-build/
 .mypy_cache/
 .pytest_cache/
-*.egg
+.idea/
 
-# Project
-mlx/libmlx.so
-mlx/libmlx_*.so
-mlx/*.o
-mlx/Makefile.gen
+# Packaging build artifacts (the committed .whl/.tar.gz at the repo root are kept)
+build/
+dist/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Generated maze output
 maze.txt
 
-# macOS
-.DS_Store
-__MACOSX/
+# Compiled MiniLibX (built by `make mlx`; source in mlx/ stays committed)
+mlx/*.o
+mlx/libmlx.so
+mlx/libmlx.a
+mlx/libmlx_*.a
+mlx/makefile.gen
+mlx/test/makefile.gen
+mlx/test/*.o
+mlx/test/mlx-test
+mlx/obj/
 
-# Editor
-.vscode/
-.idea/
-*~
+# Editor/OS cruft
+*.swp
+.DS_Store

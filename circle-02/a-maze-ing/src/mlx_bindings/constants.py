@@ -19,7 +19,9 @@ _EVENT_HOOK_FUNC = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_void_p)
 CLIENT_MESSAGE_EVENT = 17
 
 _DEFAULT_LIB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ),
     "mlx",
     "libmlx.so",
 )

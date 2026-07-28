@@ -10,7 +10,8 @@ def solve_bfs(
     on_frontier: Optional[Callable[[Tuple[int, int]], None]] = None,
 ) -> List[Tuple[int, int]]:
     """!
-    @brief Finds the unique path between two points in a perfect maze using BFS.
+    @brief Finds the unique path between two points in a perfect maze
+           using BFS.
     @param grid A 2D list where each cell stores wall status as bitmasks.
     @param start The starting coordinate (x, y).
     @param end The destination coordinate (x, y).

@@ -50,7 +50,11 @@ class HooksMixin:
         self._lib.mlx_loop_hook(self.ptr, wrapped, None)
 
     def hook(
-        self, win: int, event: int, mask: int, callback: Callable[[], None]
+        self,
+        win: int,
+        event: int,
+        mask: int,
+        callback: Callable[[], None],
     ) -> None:
         """!
         @brief Registers `callback()` on a raw MLX/X11 event number.

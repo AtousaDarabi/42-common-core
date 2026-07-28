@@ -38,7 +38,9 @@ def run_prim(
     visited[start[1]][start[0]] = True
     edge_count = 0
 
-    for nx, ny, bit in get_unvisited_neighbors(start[0], start[1], w, h, visited):
+    for nx, ny, bit in get_unvisited_neighbors(
+        start[0], start[1], w, h, visited
+    ):
         frontier.append((start[0], start[1], nx, ny, bit))
 
     while frontier:
@@ -52,9 +54,13 @@ def run_prim(
             if on_step is not None:
                 on_step()
 
-            for nnx, nny, nbit in get_unvisited_neighbors(nx, ny, w, h, visited):
+            for nnx, nny, nbit in get_unvisited_neighbors(
+                nx, ny, w, h, visited
+            ):
                 frontier.append((nx, ny, nnx, nny, nbit))
 
     expected = get_expected_edges(w, h, blocked)
     if not verify_spanning_tree(edge_count, expected):
-        raise ValueError("Prim's algorithm failed to generate a perfect spanning tree.")
+        raise ValueError(
+            "Prim's algorithm failed to generate a perfect spanning tree."
+        )

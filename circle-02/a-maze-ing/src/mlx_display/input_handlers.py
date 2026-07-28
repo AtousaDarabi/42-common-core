@@ -22,22 +22,17 @@ class InputMixin(GenAnimationMixin, SolveAnimationMixin, RedrawMixin):
                  all depending on version) -- logging it here makes a bug
                  impossible to miss.
         """
-        log.debug("key_hook fired, keysym=%s", keysym)
         try:
             if keysym in (KEY_Q, KEY_ESCAPE):
-                log.debug("quit requested, calling mlx.loop_end()")
                 self.mlx.loop_end()
             elif keysym == KEY_R:
-                log.debug("regenerate requested")
                 solve_on_visit, solve_on_frontier = self.make_solve_animators()
                 self.regenerate(
                     on_step=self.make_animate_step(),
                     on_visit=solve_on_visit,
                     on_frontier=solve_on_frontier,
                 )
-                log.debug("regenerate() returned OK, redrawing")
                 self.redraw()
-                log.debug("redraw() returned OK")
             elif keysym == KEY_P:
                 self.show_path = not self.show_path
                 self.redraw()
@@ -54,5 +49,4 @@ class InputMixin(GenAnimationMixin, SolveAnimationMixin, RedrawMixin):
                  close click is not a keypress -- `mlx_key_hook` alone
                  leaves that button doing nothing.
         """
-        log.debug("on_close fired (X button clicked)")
         self.mlx.loop_end()

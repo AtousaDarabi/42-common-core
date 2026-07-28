@@ -1,11 +1,10 @@
 """The `MlxSession` class: owns all MLX display state for one window."""
 
-from typing import Callable, Set, Tuple
+from typing import Callable, List, Set, Tuple
 
 from src.display import print_menu
 from src.mlx_bindings import MLX, CLIENT_MESSAGE_EVENT
 
-from .debug_log import log
 from .input_handlers import InputMixin
 
 
@@ -28,7 +27,7 @@ class MlxSession(InputMixin):
         entry: Tuple[int, int],
         exit_cell: Tuple[int, int],
         regenerate: Callable[..., None],
-        get_grid: Callable[[], list],
+        get_grid: Callable[[], List[List[int]]],
         get_path_cells: Callable[[], Set[Tuple[int, int]]],
         animate: bool,
         animate_delay: float,
@@ -65,9 +64,7 @@ class MlxSession(InputMixin):
         self.mlx.key_hook(self.win, self.on_key)
         self.mlx.hook(self.win, CLIENT_MESSAGE_EVENT, 0, self.on_close)
         self.redraw()
-        log.debug("entering mlx.loop() now")
         self.mlx.loop()
-        log.debug("mlx.loop() has returned -- loop ended normally")
 
         self.mlx.destroy_window(self.win)
         self.mlx.destroy_display()

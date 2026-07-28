@@ -16,7 +16,8 @@ def write_maze_file(
     @param hex_rows One hexadecimal-encoded string per maze row.
     @param entry Entry coordinates (x, y).
     @param exit_cell Exit coordinates (x, y).
-    @param path The shortest entry-to-exit path, as a string of N/E/S/W letters.
+    @param path The shortest entry-to-exit path, as a string of
+           N/E/S/W letters.
     @param output_file Destination file path.
     @details Rows are written first, then a blank line, then entry, exit and
              path each on their own line, exactly as specified by the subject.
@@ -36,5 +37,8 @@ def write_maze_file(
             handle.write(f"{exit_cell[0]},{exit_cell[1]}\n")
             handle.write(f"{path}\n")
     except OSError as exc:
-        print(f"Error: unable to save to file '{output_file}': {exc}", file=sys.stderr)
+        print(
+            f"Error: unable to save to file '{output_file}': {exc}",
+            file=sys.stderr,
+        )
         sys.exit(1)

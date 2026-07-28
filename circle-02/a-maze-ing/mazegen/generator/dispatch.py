@@ -7,7 +7,8 @@ from .state import GeneratorAttrs
 
 class AlgorithmDispatchMixin(GeneratorAttrs):
     """!
-    @brief Provides algorithm resolution/dispatch, used by `MazeGenerator.generate()`.
+    @brief Provides algorithm resolution/dispatch, used by
+           `MazeGenerator.generate()`.
     """
 
     ALGORITHMS = ["DFS", "KRUSKAL", "PRIM"]
@@ -49,7 +50,9 @@ class AlgorithmDispatchMixin(GeneratorAttrs):
         elif active_algo == "KRUSKAL":
             from ..algorithms.kruskal import run_kruskal
 
-            run_kruskal(self.grid, self.w, self.h, self._blocked_cells, on_step)
+            run_kruskal(
+                self.grid, self.w, self.h, self._blocked_cells, on_step
+            )
         elif active_algo == "PRIM":
             from ..algorithms.prim import run_prim
 

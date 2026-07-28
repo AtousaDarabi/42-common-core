@@ -22,14 +22,3 @@ def remove_walls(
 
     grid[curr[1]][curr[0]] &= ~(1 << bit)
     grid[nxt[1]][nxt[0]] &= ~(1 << opp_bit)
-
-
-def get_init_value() -> int:
-    """!
-    @brief Provides the initial state for a cell with all walls present.
-    @return An integer representing all four walls closed (0xF/15).
-    @details This value acts as the default state for unvisited cells.
-    @note The value 15 corresponds to binary 1111 (N, E, S, W).
-    @warning Ensure grid initialization uses this value for boundaries.
-    """
-    return 15

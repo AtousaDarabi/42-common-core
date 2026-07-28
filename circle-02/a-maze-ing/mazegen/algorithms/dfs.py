@@ -46,35 +46,3 @@ def run_dfs(grid: List[List[int]], visited: List[List[bool]],
 
     if not verify_spanning_tree(edges, get_expected_edges(w, h, blocked)):
         raise ValueError("Maze is not a perfect Spanning Tree.")
-
-
-def solve_dfs(grid: List[List[int]], start: Tuple[int, int],
-              end: Tuple[int, int]) -> List[Tuple[int, int]]:
-    """!
-    @brief Finds a path from start to end using Depth-First Search.
-    @param grid The 2D grid representing the maze.
-    @param start The starting (x, y) coordinate.
-    @param end The destination (x, y) coordinate.
-    @return A list of coordinates representing the path, or an empty list
-            if no path exists (not expected in a connected maze).
-    @details Each stack entry carries the full path taken to reach it, so
-             finding `end` can return immediately without a separate
-             backtracking step. Directions are North(0), East(1), South(2),
-             West(3), encoded as (dx, dy, wall bit).
-    """
-    stack = [(start, [start])]
-    visited = {start}
-    h, w = len(grid), len(grid[0])
-
-    while stack:
-        (cx, cy), path = stack.pop()
-        if (cx, cy) == end:
-            return path
-
-        for dx, dy, bit in [(0, -1, 0), (1, 0, 1), (0, 1, 2), (-1, 0, 3)]:
-            nx, ny = cx + dx, cy + dy
-            if 0 <= nx < w and 0 <= ny < h:
-                if not (grid[cy][cx] & (1 << bit)) and (nx, ny) not in visited:
-                    visited.add((nx, ny))
-                    stack.append(((nx, ny), path + [(nx, ny)]))
-    return []

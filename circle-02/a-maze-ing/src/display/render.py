@@ -40,7 +40,9 @@ def render_ascii(
     """
     path = list(path or [])
     path_cells = set(path)
-    path_edges = {frozenset((path[i], path[i + 1])) for i in range(len(path) - 1)}
+    path_edges = {
+        frozenset((path[i], path[i + 1])) for i in range(len(path) - 1)
+    }
     visited_cells = set(visited or [])
 
     wall_code = WALL_COLOR_CODES.get(wall_color, WALL_COLOR_CODES["default"])
@@ -50,7 +52,9 @@ def render_ascii(
     for y in range(height):
         for x in range(width):
             row, col = y * 2 + 1, x * (CELL_W + 1) + 1
-            draw_cell_walls(canvas, grid, x, y, row, col, wall_slot, path_edges)
+            draw_cell_walls(
+                canvas, grid, x, y, row, col, wall_slot, path_edges
+            )
             fill_cell_interior(
                 canvas, row, col, x, y, grid[y][x], entry, exit_cell,
                 path_cells, visited_cells,

@@ -200,24 +200,45 @@ environment).
 
 ```
 amazing/
-├── a_maze_ing.py        # entry point (must stay at repo root, see Usage)
-├── config.txt            # default configuration file
-├── mazegen/               # reusable package (the only pip-installable part)
-├── src/                   # project-specific glue, not part of the package
-│   ├── config_loader.py   # parses config.txt into a typed MazeConfig
-│   ├── file_writer.py     # writes the subject's on-disk hex output format
-│   ├── display.py         # ASCII rendering + terminal interactions
-│   ├── mlx_bindings.py    # ctypes wrapper around the compiled mlx/libmlx.so
-│   └── mlx_display.py     # MLX graphical rendering + key-hook interactions
+├── a_maze_ing.py           # thin CLI entry point (must stay at repo root, see Usage)
+├── config.txt              # default configuration file
+├── mazegen/                # reusable package (the only pip-installable part)
+│   ├── generator/          # the MazeGenerator class, split into mixins
+│   │   ├── core.py         # __init__, generate(), get_solution_path(), to_hex_rows()
+│   │   ├── dispatch.py     # resolves RANDOM/DFS/KRUSKAL/PRIM and dispatches
+│   │   ├── pattern.py      # '42' pattern placement
+│   │   ├── loops.py        # extra loop edges for imperfect mazes
+│   │   └── state.py        # shared instance-attribute declarations
+│   ├── algorithms/         # DFS, Kruskal, Prim spanning-tree generators
+│   │   ├── dfs.py, kruskal.py, prim.py
+│   │   ├── union_find.py   # DSU used by Kruskal's algorithm
+│   │   └── solver.py       # BFS shortest-path solver
+│   └── utils/               # small single-purpose helpers
+│       ├── wall_logic.py, grid_ops.py, graph_math.py
+│       ├── patterns.py, path_utils.py
+│       └── validation/      # structural invariants (open-area rule, connectivity)
+├── src/                     # project-specific glue, not part of the package
+│   ├── config_loader/       # parses config.txt into a typed MazeConfig
+│   ├── file_writer.py       # writes the subject's on-disk hex output format
+│   ├── display/             # ASCII rendering + terminal interactions
+│   ├── mlx_bindings/        # ctypes wrapper around the compiled mlx/libmlx.so
+│   ├── mlx_display/         # MLX graphical rendering + key-hook interactions
+│   ├── build.py             # glue: runs MazeGenerator and writes the output file
+│   ├── ascii_animate.py     # terminal animation frame callback (generation bonus)
+│   ├── ascii_runner.py      # ASCII command loop
+│   └── mlx_runner.py        # wires build.py to mlx_display.run_mlx_display
 ├── mazegen-1.0.0-py3-none-any.whl / .tar.gz   # built package archives
 ├── pyproject.toml, Makefile, .flake8, requirements-dev.txt
-└── mlx/                   # vendored MiniLibX C source; `make mlx` compiles
-                            # it into mlx/libmlx.so (not committed, see .gitignore)
+└── mlx/                     # vendored MiniLibX C source; `make mlx` compiles
+                              # it into mlx/libmlx.so (not committed, see .gitignore)
 ```
 
-`a_maze_ing.py` imports from both `mazegen` (generation/solving) and `src`
-(config parsing, file output, display) — none of which the reusable package
-depends on in the other direction.
+`a_maze_ing.py` is a thin entry point: it hands off to `src/build.py` (which
+drives `MazeGenerator` from `mazegen` and writes the output file via
+`src/file_writer.py`) and then to either `src/ascii_runner.py` or
+`src/mlx_runner.py`, depending on `DISPLAY`. `mazegen` stays fully
+self-contained — the dependency runs one way only, from the project-specific
+`src/` glue down into the reusable package, never the other way around.
 
 ## Team and project management
 
@@ -226,8 +247,8 @@ depends on in the other direction.
 | Owner | Area | Files | Responsibilities |
 | --- | --- | --- | --- |
 | Shared | Project root | `a_maze_ing.py`, `config.txt`, `Makefile`, `README.md`, `pyproject.toml`, `.flake8` | Entry point wiring, default configuration, build/lint/packaging automation, documentation |
-| **anmakhov** | Engine — reusable core (`mazegen/`) | `mazegen/__init__.py`, `generator.py`, `algorithms/dfs.py`, `algorithms/kruskal.py`, `algorithms/prim.py`, `algorithms/solver.py`, `utils/grid_ops.py`, `utils/validation.py`, `utils/wall_logic.py`, `utils/graph_math.py`, `utils/patterns.py` | `MazeGenerator` class and package exports; the three generation algorithms (DFS/Kruskal/Prim); grid neighbour lookups and connectivity/open-area validation; wall-removal and spanning-tree math; the '42' pattern placement logic; the BFS shortest-path solver; hex-encoding the grid (`to_hex_rows()`) for file output |
-| **adarabi** | Infrastructure & interface (`src/`) | `config_loader.py`, `file_writer.py`, `display.py`, `mlx_bindings.py`, `mlx_display.py` | Reading and validating `config.txt` (mandatory keys, in-bounds coordinates); writing the on-disk output file format; the ASCII terminal display and its `r`/`p`/`c`/`q` interactions; the ctypes MiniLibX bindings; the MLX graphical display, its interactions, and the (bonus) step-by-step animation of generation and solving |
+| **anmakhov** | Engine — reusable core (`mazegen/`) | `mazegen/__init__.py`, `generator/core.py`, `generator/dispatch.py`, `generator/pattern.py`, `generator/loops.py`, `generator/state.py`, `algorithms/dfs.py`, `algorithms/kruskal.py`, `algorithms/prim.py`, `algorithms/union_find.py`, `algorithms/solver.py`, `utils/grid_ops.py`, `utils/validation/`, `utils/wall_logic.py`, `utils/graph_math.py`, `utils/patterns.py`, `utils/path_utils.py` | `MazeGenerator` class (split into mixins under `generator/`) and package exports; algorithm resolution/dispatch (`RANDOM`/`DFS`/`KRUSKAL`/`PRIM`); the three generation algorithms plus the union-find DSU backing Kruskal's; grid neighbour lookups and connectivity/open-area validation; wall-removal and spanning-tree math; the '42' pattern placement logic and extra-loop edges for imperfect mazes; the BFS shortest-path solver; hex-encoding the grid (`to_hex_rows()`) for file output |
+| **adarabi** | Infrastructure & interface (`src/`) | `config_loader/`, `file_writer.py`, `display/`, `mlx_bindings/`, `mlx_display/`, `build.py`, `ascii_animate.py`, `ascii_runner.py`, `mlx_runner.py` | Reading and validating `config.txt` (mandatory keys, in-bounds coordinates); writing the on-disk output file format; running `MazeGenerator` and wiring its output to disk (`build.py`); the ASCII terminal display, its `r`/`p`/`c`/`q` command loop (`ascii_runner.py`), and the (bonus) generation animation callback (`ascii_animate.py`); the ctypes MiniLibX bindings; the MLX graphical display, its key-hook interactions, and wiring it to `build.py` (`mlx_runner.py`) |
 
 ### Planning
 
@@ -237,10 +258,10 @@ writing, and both displays) — mirroring the subject's own separation between
 reusable code and project-specific glue. That held for the mandatory part,
 but the bonus work (animated generation/solving, the MLX colour palette, the
 BFS frontier/current/trail visualisation) needed both sides changing
-together: `mazegen/generator.py` and `algorithms/solver.py` had to expose
-`on_step`/`on_visit`/`on_frontier` callbacks before `src/display.py` and
-`src/mlx_display.py` could use them, so that work was designed and merged as
-a unit rather than fully in parallel. Algorithm selection also got revisited
+together: `mazegen/generator/core.py` and `algorithms/solver.py` had to
+expose `on_step`/`on_visit`/`on_frontier` callbacks before `src/display/`
+and `src/mlx_display/` could use them, so that work was designed and merged
+as a unit rather than fully in parallel. Algorithm selection also got revisited
 mid-project — briefly changed to always-random, then reverted back to
 respecting the `ALGORITHM` config key once we agreed that wasn't what we
 wanted — a reminder to settle on a behaviour change before implementing it.

@@ -23,7 +23,9 @@ def build_canvas(width: int, height: int, wall_slot: str) -> List[List[str]]:
     """
     canvas_w = width * (CELL_W + 1) + 1
     canvas_h = height * 2 + 1
-    canvas: List[List[str]] = [[" " for _ in range(canvas_w)] for _ in range(canvas_h)]
+    canvas: List[List[str]] = [
+        [" " for _ in range(canvas_w)] for _ in range(canvas_h)
+    ]
     for gy in range(height + 1):
         for gx in range(width + 1):
             canvas[gy * 2][gx * (CELL_W + 1)] = wall_slot

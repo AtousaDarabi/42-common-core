@@ -1,16 +1,12 @@
-"""TEMP diagnostics logger for the MLX display.
+"""Module-level logger for the MLX display.
 
-Everything also goes to this file, so nothing is lost to terminal
-scrollback/buffering. Remove this whole module once the close/regenerate
-issue is confirmed fixed.
+Uses the standard `logging` pattern for libraries: no handlers or level
+are configured here, so this is silent by default. An application (or
+the user, for debugging) can opt in with e.g.
+`logging.basicConfig(level=logging.DEBUG)` before running the MLX
+display, and messages logged via `log` will start showing up.
 """
 
 import logging
 
-logging.basicConfig(
-    filename="/tmp/mlx_debug.log",
-    filemode="a",
-    level=logging.DEBUG,
-    format="%(asctime)s %(message)s",
-)
-log = logging.getLogger("mlx_display")
+log = logging.getLogger(__name__)

@@ -72,7 +72,9 @@ class MLX(HooksMixin):
         """
         self._lib.mlx_pixel_put(self.ptr, win, x, y, color)
 
-    def string_put(self, win: int, x: int, y: int, color: int, text: str) -> None:
+    def string_put(
+        self, win: int, x: int, y: int, color: int, text: str
+    ) -> None:
         """!
         @brief Draws `text` at (x, y) in the given window.
         """

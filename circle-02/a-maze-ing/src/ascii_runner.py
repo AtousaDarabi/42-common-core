@@ -50,14 +50,18 @@ def run_ascii(config: MazeConfig, maze: MazeGenerator) -> None:
             if config.animate and not ascii_animation_fits_terminal(config):
                 canvas_width = config.width * (CELL_W + 1) + 1
                 print(
-                    f"Note: maze render is {canvas_width} columns wide, wider than "
-                    f"your {shutil.get_terminal_size().columns}-column terminal -- "
-                    "skipping animation this time to avoid corrupting the display "
-                    "(the finished maze will still show normally)."
+                    f"Note: maze render is {canvas_width} columns wide, "
+                    f"wider than your "
+                    f"{shutil.get_terminal_size().columns}-column terminal "
+                    "-- skipping animation this time to avoid corrupting "
+                    "the display (the finished maze will still show "
+                    "normally)."
                 )
                 on_step = None
             else:
-                on_step = make_animator(config, current, lambda: state["color_idx"])
+                on_step = make_animator(
+                    config, current, lambda: state["color_idx"]
+                )
             build_and_write(
                 config, seed=None,
                 on_maze_created=lambda m: current.__setitem__("maze", m),

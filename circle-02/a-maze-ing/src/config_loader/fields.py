@@ -104,7 +104,10 @@ def parse_animation(raw: Dict[str, str]) -> Tuple[bool, float]:
         try:
             animate_delay = float(raw["ANIMATE_DELAY"])
         except ValueError:
-            fail(f"ANIMATE_DELAY must be a number, got {raw['ANIMATE_DELAY']!r}")
+            fail(
+                "ANIMATE_DELAY must be a number, "
+                f"got {raw['ANIMATE_DELAY']!r}"
+            )
         if animate_delay < 0:
             fail("ANIMATE_DELAY must not be negative")
     return animate, animate_delay

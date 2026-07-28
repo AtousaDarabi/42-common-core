@@ -2,8 +2,16 @@
 
 from typing import List, Set, Tuple
 
-from .canvas import ALL_WALLS_CLOSED, CELL_W
-from .colors import ENTRY_BG, EXIT_BG, PATH_BG, PATTERN_BG, VISITED_BG, sgr
+from .canvas import ALL_WALLS_CLOSED
+from .colors import (
+    CELL_W,
+    ENTRY_BG,
+    EXIT_BG,
+    PATH_BG,
+    PATTERN_BG,
+    VISITED_BG,
+    sgr,
+)
 
 
 def fill_cell_interior(

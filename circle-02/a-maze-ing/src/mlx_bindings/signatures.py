@@ -33,7 +33,11 @@ def configure_signatures(lib: ctypes.CDLL) -> None:
     ]
     lib.mlx_pixel_put.restype = ctypes.c_int
     lib.mlx_pixel_put.argtypes = [
-        ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
     ]
     lib.mlx_string_put.restype = ctypes.c_int
     lib.mlx_string_put.argtypes = [
@@ -43,12 +47,20 @@ def configure_signatures(lib: ctypes.CDLL) -> None:
     lib.mlx_clear_window.restype = ctypes.c_int
     lib.mlx_clear_window.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
     lib.mlx_key_hook.restype = ctypes.c_int
-    lib.mlx_key_hook.argtypes = [ctypes.c_void_p, _KEY_HOOK_FUNC, ctypes.c_void_p]
+    lib.mlx_key_hook.argtypes = [
+        ctypes.c_void_p, _KEY_HOOK_FUNC, ctypes.c_void_p
+    ]
     lib.mlx_loop_hook.restype = ctypes.c_int
-    lib.mlx_loop_hook.argtypes = [ctypes.c_void_p, _LOOP_HOOK_FUNC, ctypes.c_void_p]
+    lib.mlx_loop_hook.argtypes = [
+        ctypes.c_void_p, _LOOP_HOOK_FUNC, ctypes.c_void_p
+    ]
     lib.mlx_hook.restype = ctypes.c_int
     lib.mlx_hook.argtypes = [
-        ctypes.c_void_p, ctypes.c_int, ctypes.c_int, _EVENT_HOOK_FUNC, ctypes.c_void_p
+        ctypes.c_void_p,
+        ctypes.c_int,
+        ctypes.c_int,
+        _EVENT_HOOK_FUNC,
+        ctypes.c_void_p,
     ]
     lib.mlx_loop.restype = ctypes.c_int
     lib.mlx_loop.argtypes = [ctypes.c_void_p]

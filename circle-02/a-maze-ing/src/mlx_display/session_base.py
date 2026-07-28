@@ -1,6 +1,6 @@
 """Shared attribute declarations for the MLX display session mixins."""
 
-from typing import Callable, Set, Tuple
+from typing import Callable, List, Set, Tuple
 
 from src.mlx_bindings import MLX
 
@@ -24,7 +24,7 @@ class SessionAttrs:
     entry: Tuple[int, int]
     exit_cell: Tuple[int, int]
     regenerate: Callable[..., None]
-    get_grid: Callable[[], list]
+    get_grid: Callable[[], List[List[int]]]
     get_path_cells: Callable[[], Set[Tuple[int, int]]]
     animate: bool
     animate_delay: float

@@ -58,6 +58,7 @@ lint-strict: install
 build: install
 	$(VENV_PYTHON) -m build
 	cp dist/mazegen-*.whl dist/mazegen-*.tar.gz .
+	rm -rf mazegen.egg-info build dist
 
 archive: build
 
@@ -68,3 +69,4 @@ clean:
 	find . -type f -name "*.pyc" -delete
 	rm -f $(MLX_DIR)/*.o $(MLX_LIB)
 	rm -rf build dist $(VENV)
+	

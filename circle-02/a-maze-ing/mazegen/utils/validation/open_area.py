@@ -15,7 +15,12 @@ def _is_open(grid: List[List[int]], x: int, y: int, bit: int) -> bool:
 
 
 def creates_oversized_open_area(
-    grid: List[List[int]], x1: int, y1: int, x2: int, y2: int, max_side: int = 2
+    grid: List[List[int]],
+    x1: int,
+    y1: int,
+    x2: int,
+    y2: int,
+    max_side: int = 2,
 ) -> bool:
     """!
     @brief Checks whether opening the wall between two adjacent cells would
@@ -41,8 +46,12 @@ def creates_oversized_open_area(
     min_x, max_x = min(x1, x2), max(x1, x2)
     min_y, max_y = min(y1, y2), max(y1, y2)
 
-    for top in range(max(0, max_y - window + 1), min(min_y, height - window) + 1):
-        for left in range(max(0, max_x - window + 1), min(min_x, width - window) + 1):
+    for top in range(
+        max(0, max_y - window + 1), min(min_y, height - window) + 1
+    ):
+        for left in range(
+            max(0, max_x - window + 1), min(min_x, width - window) + 1
+        ):
             if top < 0 or left < 0:
                 continue
             if top + window > height or left + window > width:
@@ -52,7 +61,9 @@ def creates_oversized_open_area(
     return False
 
 
-def _is_block_fully_open(grid: List[List[int]], left: int, top: int, size: int) -> bool:
+def _is_block_fully_open(
+    grid: List[List[int]], left: int, top: int, size: int
+) -> bool:
     """!
     @brief Returns True if every internal wall inside the `size`x`size`
            block starting at (left, top) is open (i.e. the block forms one
