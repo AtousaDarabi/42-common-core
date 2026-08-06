@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+
+# Packaging build artifacts (the committed .whl/.tar.gz at the repo root are kept)
+build/
+dist/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Generated maze output
+maze.txt
+
+# Compiled MiniLibX (built by `make mlx`; source in mlx/ stays committed)
+mlx/*.o
+mlx/libmlx.so
+mlx/libmlx.a
+mlx/libmlx_*.a
+mlx/makefile.gen
+mlx/test/makefile.gen
+mlx/test/*.o
+mlx/test/mlx-test
+mlx/obj/
+
+# Editor/OS cruft
+*.swp
+.DS_Store
