@@ -10,7 +10,7 @@ readme = "mazegen/README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
-    { name = "TODO: your 42 login(s)" },
+    { name = "adarabi" }, { name = "anmakhov" },
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

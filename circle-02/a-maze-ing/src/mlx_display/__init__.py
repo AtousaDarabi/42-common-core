@@ -57,7 +57,9 @@ def run_mlx_display(
     """
     try:
         mlx = MLX()
-        win = mlx.new_window(width * CELL_SIZE + 1, height * CELL_SIZE + 1, "A-Maze-ing")
+        win = mlx.new_window(
+            width * CELL_SIZE + 1, height * CELL_SIZE + 1, "A-Maze-ing"
+        )
     except MLXUnavailableError as exc:
         return exc
 

@@ -38,7 +38,9 @@ class MazeGenerator(AlgorithmDispatchMixin, PatternMixin, LoopMixin):
                  draw from the seeded global `random` module instead.
         """
         self.w, self.h = w, h
-        self.grid: List[List[int]] = [[ALL_WALLS_CLOSED for _ in range(w)] for _ in range(h)]
+        self.grid: List[List[int]] = [
+            [ALL_WALLS_CLOSED for _ in range(w)] for _ in range(h)
+        ]
         self.visited: List[List[bool]] = [[False for _ in range(w)] for _ in range(h)]
         self.algorithm_flag = algorithm.upper()
         self.solution_coords: List[Tuple[int, int]] = []
@@ -57,7 +59,8 @@ class MazeGenerator(AlgorithmDispatchMixin, PatternMixin, LoopMixin):
         on_frontier: Optional[Callable[[Tuple[int, int]], None]] = None,
     ) -> None:
         """!
-        @brief Generates the maze using the selected algorithm and finds the solution path.
+        @brief Generates the maze using the selected algorithm and
+        finds the solution path.
         @param entry Starting coordinates of the maze.
         @param exit_cell Target coordinates of the maze.
         @param perfect If True, the maze is a spanning tree (exactly one path
@@ -82,7 +85,9 @@ class MazeGenerator(AlgorithmDispatchMixin, PatternMixin, LoopMixin):
         active_algo = self._resolve_algorithm()
         self._run_spanning_tree(active_algo, entry, blocked_count, on_step)
 
-        if not is_fully_connected(self.grid, self.w, self.h, blocked_count):
+        if not is_fully_connected(
+            self.grid, self.w, self.h, blocked_count
+        ):
             raise ValueError(
                 "Generated maze is not fully connected; this indicates a bug "
                 "in the generation algorithm."
@@ -93,7 +98,9 @@ class MazeGenerator(AlgorithmDispatchMixin, PatternMixin, LoopMixin):
 
         from ..algorithms.solver import solve_bfs
 
-        self.solution_coords = solve_bfs(self.grid, entry, exit_cell, on_visit, on_frontier)
+        self.solution_coords = solve_bfs(
+            self.grid, entry, exit_cell, on_visit, on_frontier
+        )
 
     def get_solution_path(self) -> str:
         """!
