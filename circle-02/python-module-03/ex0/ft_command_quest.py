@@ -22,3 +22,17 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# from pathlib import Path
+# ## File name with extension (e.g., script.py)
+# file_name = Path(__file__).name
+# ## File name without extension (e.g., script)
+# file_stem = Path(__file__).stem
+# print(file_name)
+
+# import os
+# ## Get filename with extension (e.g., script.py)
+# file_name = os.path.basename(__file__)
+# ## Get filename without extension (e.g., script)
+# file_stem = os.path.splitext(file_name)[0]
+# print(file_name)
