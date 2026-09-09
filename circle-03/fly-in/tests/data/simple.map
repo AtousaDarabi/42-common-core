@@ -1,0 +1,12 @@
+nb_drones: 5
+
+start_hub: start 0 0 [color=green]
+end_hub: goal 3 0 [color=yellow]
+hub: first 1 1
+hub: second 1 1 [zone=priority max_drones=2]
+hub: third 3 3 [zone=priority max_drones=2]
+
+connection: start-first
+connection: first-second [max_link_capacity=2]
+connection: second-third [max_link_capacity=2]
+connection: third-goal
