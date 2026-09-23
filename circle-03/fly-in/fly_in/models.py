@@ -1,50 +1,126 @@
-"""Domain models for the Fly-in drone simulator."""
+"""Domain objects used by the Fly-in simulation."""
 
 from dataclasses import dataclass, field
-from enum import Enum
+from typing import Optional
 
 
-class ZoneType(str, Enum):
-    """Supported zone types."""
-
-    NORMAL = "normal"
-    BLOCKED = "blocked"
-    RESTRICTED = "restricted"
-    PRIORITY = "priority"
-
-    @property
-    def movement_cost(self) -> int:
-        """Return the number of turns required to enter the zone."""
-        return 2 if self is ZoneType.RESTRICTED else 1
+VALID_ZONE_TYPES = {"normal", "blocked", "restricted", "priority"}
+RESTRICTED_COST = 2
+NORMAL_COST = 1
 
 
 @dataclass
-class Hub:
-    """A named zone in the network."""
+class Zone:
+    """A map zone that can contain drones."""
 
     name: str
     x: int
     y: int
-    zone_type: ZoneType = ZoneType.NORMAL
-    max_drones: int = 1
-    color: str | None = None
+    kind: str = "normal"
+    color: Optional[str] = None
+    capacity: int = 1
+    neighbors: list[str] = field(default_factory=list)
+
+    @property
+    def movement_cost(self) -> int:
+        """Return the number of turns needed to enter this zone."""
+        return RESTRICTED_COST if self.kind == "restricted" else NORMAL_COST
+
+    @property
+    def blocked(self) -> bool:
+        """Return whether drones are forbidden from entering this zone."""
+        return self.kind == "blocked"
+
+    @property
+    def is_priority(self) -> bool:
+        """Return whether this zone should be preferred when routes tie."""
+        return self.kind == "priority"
 
 
 @dataclass
 class Connection:
-    """A bidirectional connection between two hubs."""
+    """A bidirectional connection between two zones."""
 
-    zone1: str
-    zone2: str
-    max_link_capacity: int = 1
+    first: str
+    second: str
+    capacity: int = 1
+
+    @property
+    def key(self) -> frozenset[str]:
+        """Return an order-independent key for duplicate detection."""
+        return frozenset((self.first, self.second))
+
+    def name(self) -> str:
+        """Return the display name used in simulation output."""
+        return f"{self.first}-{self.second}"
+
+    def connects(self, first: str, second: str) -> bool:
+        """Return whether this connection joins two given zones."""
+        return {self.first, self.second} == {first, second}
 
 
 @dataclass
 class MapData:
-    """A fully parsed drone map."""
+    """Complete parsed map and its routing metadata."""
 
-    nb_drones: int
-    start_hub: str
-    end_hub: str
-    hubs: dict[str, Hub] = field(default_factory=dict)
-    connections: list[Connection] = field(default_factory=list)
+    drone_count: int
+    zones: dict[str, Zone]
+    connections: dict[frozenset[str], Connection]
+    start: str
+    end: str
+
+    def add_connection(self, connection: Connection) -> None:
+        """Add a connection and update both adjacency lists."""
+        self.connections[connection.key] = connection
+        self.zones[connection.first].neighbors.append(connection.second)
+        self.zones[connection.second].neighbors.append(connection.first)
+
+    def connection_between(self, first: str, second: str) -> Connection:
+        """Return the connection joining two zones."""
+        return self.connections[frozenset((first, second))]
+
+
+@dataclass
+class Drone:
+    """Mutable state for one drone during simulation.
+
+    Unlike a fixed pre-computed route, a drone only remembers where it
+    currently is. Its next hop is decided turn by turn by the
+    simulation's greedy router, which is what lets different drones end
+    up taking different paths through the map.
+    """
+
+    identifier: int
+    zone: str
+    transit_to: Optional[str] = None
+    transit_connection: Optional[str] = None
+    route: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        """Seed the travel log with the drone's starting zone."""
+        if not self.route:
+            self.route = [self.zone]
+
+    def is_delivered(self, end: str) -> bool:
+        """Return whether this drone has arrived at the end zone."""
+        return self.transit_to is None and self.zone == end
+
+    def arrive(self, destination: str) -> None:
+        """Move the drone directly into an adjacent zone."""
+        self.zone = destination
+        self.route.append(destination)
+
+    def begin_transit(self, destination: str, connection_name: str) -> None:
+        """Commit the drone to a two-turn move into a restricted zone."""
+        self.transit_to = destination
+        self.transit_connection = connection_name
+
+    def complete_transit(self) -> str:
+        """Finish an in-flight move and return the drone's new zone."""
+        assert self.transit_to is not None
+        destination = self.transit_to
+        self.zone = destination
+        self.route.append(destination)
+        self.transit_to = None
+        self.transit_connection = None
+        return destination

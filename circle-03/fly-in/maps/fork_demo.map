@@ -1,0 +1,14 @@
+# Minimal demo of equal-cost multi-path routing: two disjoint,
+# equal-cost, capacity-1 branches between start and goal. An
+# implementation that only ever computes one shared path serializes
+# all 4 drones through a single branch (5 turns). Splitting the fleet
+# 2/2 across both branches finishes in 3 turns.
+nb_drones: 4
+start_hub: start 0 0 [color=green]
+end_hub: goal 4 0 [color=red]
+hub: path_a 2 1 [color=blue]
+hub: path_b 2 -1 [color=blue]
+connection: start-path_a
+connection: path_a-goal
+connection: start-path_b
+connection: path_b-goal

@@ -1,154 +1,166 @@
-"""Parser and validation for Fly-in map files."""
+"""Parser for Fly-in map files."""
 
 import re
 from pathlib import Path
+from typing import Iterable, Optional, Union
 
-from .models import Connection, Hub, MapData, ZoneType
+from .models import Connection, MapData, VALID_ZONE_TYPES, Zone
+
+_ZONE_METADATA_KEYS = {"zone", "color", "max_drones"}
+_CONNECTION_METADATA_KEYS = {"max_link_capacity"}
 
 
 class MapParseError(ValueError):
-    """Raised when a map file is invalid."""
+    """Raised when a map line does not follow the project format."""
 
 
-_ALLOWED_METADATA = {"zone", "color", "max_drones", "max_link_capacity"}
+class MapParser:
+    """Parse and validate a Fly-in map file."""
 
-
-def _metadata(content: str) -> dict[str, str]:
-    match = re.search(r"\[(.*?)\]", content)
-    if match is None:
-        if "[" in content or "]" in content:
-            raise MapParseError("malformed metadata block")
-        return {}
-
-    metadata: dict[str, str] = {}
-    for item in match.group(1).split():
-        if "=" not in item:
-            raise MapParseError(f"metadata item '{item}' must use key=value")
-        key, value = item.split("=", 1)
-        if not key or not value:
-            raise MapParseError("metadata keys and values cannot be empty")
-        if key not in _ALLOWED_METADATA:
-            raise MapParseError(f"unknown metadata key '{key}'")
-        if key in metadata:
-            raise MapParseError(f"duplicate metadata key '{key}'")
-        metadata[key] = value
-    return metadata
-
-
-def _parse_hub(line: str) -> tuple[Hub, str]:
-    prefixes = (("start_hub:", "start"), ("end_hub:", "end"), ("hub:", "hub"))
-    for prefix, kind in prefixes:
-        if line.startswith(prefix):
-            content = line[len(prefix):].strip()
-            break
-    else:
-        raise MapParseError("invalid hub definition")
-
-    parts = content.split()
-    if len(parts) < 3:
-        raise MapParseError("hub requires a name and two coordinates")
-    name = parts[0]
-    if "-" in name or " " in name:
-        raise MapParseError("hub names cannot contain '-' or spaces")
-    try:
-        x, y = int(parts[1]), int(parts[2])
-    except ValueError as error:
-        raise MapParseError("hub coordinates must be integers") from error
-
-    metadata = _metadata(content)
-    try:
-        zone_type = ZoneType(metadata.get("zone", ZoneType.NORMAL.value))
-    except ValueError as error:
-        message = f"invalid zone type '{metadata.get('zone')}'"
-        raise MapParseError(message) from error
-    try:
-        max_drones = int(metadata.get("max_drones", "1"))
-    except ValueError as error:
-        raise MapParseError("max_drones must be an integer") from error
-    if max_drones <= 0:
-        raise MapParseError("max_drones must be positive")
-
-    return (
-        Hub(name, x, y, zone_type, max_drones, metadata.get("color")),
-        kind,
+    _zone_pattern = re.compile(
+        r"^(start_hub|end_hub|hub):\s+(\S+)\s+(-?\d+)\s+"
+        r"(-?\d+)(?:\s+\[(.*)\])?$"
     )
+    _connection_pattern = re.compile(
+        r"^connection:\s+(\S+)-(\S+)(?:\s+\[(.*)\])?$"
+    )
+    _bad_name_pattern = re.compile(r"[-\s]")
 
+    def parse_file(self, path: Union[str, Path]) -> MapData:
+        """Read and validate a map file."""
+        with Path(path).open(encoding="utf-8") as map_file:
+            return self.parse_lines(map_file)
 
-def _parse_connection(line: str) -> Connection:
-    content = line.removeprefix("connection:").strip()
-    parts = content.split()
-    if not parts:
-        raise MapParseError("connection requires two hub names")
-    endpoints = parts[0].split("-")
-    if len(endpoints) != 2 or not all(endpoints):
-        raise MapParseError("connection must contain exactly two hub names")
+    def parse_lines(self, lines: Iterable[str]) -> MapData:
+        """Parse map lines while reporting the offending line number."""
+        drone_count: Optional[int] = None
+        zones: dict[str, Zone] = {}
+        connections: dict[frozenset[str], Connection] = {}
+        start: Optional[str] = None
+        end: Optional[str] = None
+        first_content_line = True
+        for line_number, raw_line in enumerate(lines, 1):
+            line = raw_line.split("#", 1)[0].strip()
+            if not line:
+                continue
+            try:
+                if line.startswith("nb_drones:"):
+                    if drone_count is not None:
+                        raise MapParseError(
+                            "nb_drones is defined more than once"
+                        )
+                    value = line.split(":", 1)[1].strip()
+                    drone_count = self._positive_int(value, "nb_drones")
+                    first_content_line = False
+                    continue
+                if first_content_line:
+                    raise MapParseError(
+                        "the first line must define nb_drones"
+                    )
+                zone_match = self._zone_pattern.match(line)
+                if zone_match:
+                    kind_prefix, name, x, y, metadata = zone_match.groups()
+                    self._validate_name(name)
+                    if name in zones:
+                        raise MapParseError(f"duplicate zone '{name}'")
+                    zone = self._make_zone(name, int(x), int(y), metadata)
+                    zones[name] = zone
+                    if kind_prefix == "start_hub":
+                        if start is not None:
+                            raise MapParseError("more than one start_hub")
+                        start = name
+                    elif kind_prefix == "end_hub":
+                        if end is not None:
+                            raise MapParseError("more than one end_hub")
+                        end = name
+                    continue
+                connection_match = self._connection_pattern.match(line)
+                if connection_match:
+                    first, second, metadata = connection_match.groups()
+                    if first not in zones or second not in zones:
+                        raise MapParseError(
+                            "connection references an undefined zone"
+                        )
+                    connection = Connection(
+                        first, second, self._capacity(metadata)
+                    )
+                    if connection.key in connections:
+                        raise MapParseError("duplicate connection")
+                    connections[connection.key] = connection
+                    zones[first].neighbors.append(second)
+                    zones[second].neighbors.append(first)
+                    continue
+                raise MapParseError("unrecognized syntax")
+            except (ValueError, TypeError) as error:
+                if isinstance(error, MapParseError):
+                    message = f"line {line_number}: {error}"
+                    raise MapParseError(message) from error
+                raise MapParseError(f"line {line_number}: {error}") from error
+        if drone_count is None or start is None or end is None:
+            raise MapParseError(
+                "map needs nb_drones, exactly one start_hub and one end_hub"
+            )
+        return MapData(drone_count, zones, connections, start, end)
 
-    metadata = _metadata(content)
-    try:
-        capacity = int(metadata.get("max_link_capacity", "1"))
-    except ValueError as error:
-        raise MapParseError("max_link_capacity must be an integer") from error
-    if capacity <= 0:
-        raise MapParseError("max_link_capacity must be positive")
-    return Connection(endpoints[0], endpoints[1], capacity)
+    def _validate_name(self, name: str) -> None:
+        """Reject zone names containing dashes or whitespace."""
+        if self._bad_name_pattern.search(name):
+            raise MapParseError(
+                f"zone name '{name}' must not contain dashes or spaces"
+            )
 
-
-def parse_map_file(file_path: str | Path) -> MapData:
-    """Parse and validate a map file."""
-    path = Path(file_path)
-    if not path.is_file():
-        raise MapParseError(f"file not found: {file_path}")
-    try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except OSError as error:
-        raise MapParseError(f"cannot read map: {error}") from error
-
-    data = MapData(0, "", "")
-    starts = 0
-    ends = 0
-    seen: set[tuple[str, str]] = set()
-
-    for line_number, raw_line in enumerate(lines, 1):
-        line = raw_line.split("#", 1)[0].strip()
-        if not line:
-            continue
-        try:
-            if line.startswith("nb_drones:"):
-                if data.nb_drones != 0:
-                    raise MapParseError("nb_drones may only appear once")
-                data.nb_drones = int(line.split(":", 1)[1].strip())
-                if data.nb_drones <= 0:
-                    raise MapParseError("nb_drones must be positive")
-            elif line.startswith(("start_hub:", "end_hub:", "hub:")):
-                hub, kind = _parse_hub(line)
-                if hub.name in data.hubs:
-                    raise MapParseError(f"duplicate hub '{hub.name}'")
-                data.hubs[hub.name] = hub
-                if kind == "start":
-                    starts += 1
-                    data.start_hub = hub.name
-                elif kind == "end":
-                    ends += 1
-                    data.end_hub = hub.name
-            elif line.startswith("connection:"):
-                connection = _parse_connection(line)
-                first, second = connection.zone1, connection.zone2
-                if first not in data.hubs or second not in data.hubs:
-                    raise MapParseError("connection references an unknown hub")
-                key = (first, second) if first <= second else (second, first)
-                if key in seen:
-                    raise MapParseError("duplicate connection")
-                seen.add(key)
-                data.connections.append(connection)
-            else:
-                raise MapParseError("unrecognised syntax")
-        except (MapParseError, ValueError) as error:
-            raise MapParseError(f"line {line_number}: {error}") from error
-
-    if data.nb_drones <= 0:
-        raise MapParseError("nb_drones must be a positive integer")
-    if starts != 1 or ends != 1:
-        raise MapParseError(
-            "map must contain exactly one start_hub and end_hub"
+    def _make_zone(
+        self, name: str, x: int, y: int, metadata: Optional[str]
+    ) -> Zone:
+        """Build a zone from its coordinates and metadata."""
+        values = self._metadata(metadata)
+        unknown = set(values) - _ZONE_METADATA_KEYS
+        if unknown:
+            unknown_key = next(iter(unknown))
+            raise MapParseError(f"unknown zone metadata '{unknown_key}'")
+        kind = values.get("zone", "normal")
+        if kind not in VALID_ZONE_TYPES:
+            raise MapParseError(f"invalid zone type '{kind}'")
+        capacity = self._positive_int(
+            values.get("max_drones", "1"), "max_drones"
         )
-    return data
+        return Zone(name, x, y, kind, values.get("color"), capacity)
+
+    @staticmethod
+    def _metadata(metadata: Optional[str]) -> dict[str, str]:
+        """Parse whitespace-separated key-value metadata."""
+        if not metadata:
+            return {}
+        values: dict[str, str] = {}
+        for item in metadata.split():
+            if "=" not in item:
+                raise MapParseError(f"invalid metadata '{item}'")
+            key, value = item.split("=", 1)
+            if not key or not value or key in values:
+                raise MapParseError("invalid or repeated metadata")
+            values[key] = value
+        return values
+
+    def _capacity(self, metadata: Optional[str]) -> int:
+        """Read a connection capacity from metadata."""
+        values = self._metadata(metadata)
+        unknown = set(values) - _CONNECTION_METADATA_KEYS
+        if unknown:
+            unknown_key = next(iter(unknown))
+            raise MapParseError(
+                f"unknown connection metadata '{unknown_key}'"
+            )
+        return self._positive_int(
+            values.get("max_link_capacity", "1"), "max_link_capacity"
+        )
+
+    @staticmethod
+    def _positive_int(value: str, field: str) -> int:
+        """Convert a positive integer field or raise a useful error."""
+        try:
+            number = int(value)
+        except ValueError as error:
+            raise MapParseError(f"{field} must be an integer") from error
+        if number <= 0:
+            raise MapParseError(f"{field} must be positive")
+        return number
