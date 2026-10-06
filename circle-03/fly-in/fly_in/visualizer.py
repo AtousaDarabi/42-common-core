@@ -8,6 +8,7 @@ else, so every map's own color scheme actually shows up in the
 terminal instead of a generic three-color UI palette.
 """
 
+from enum import Enum
 from typing import Optional
 
 from .models import MapData
@@ -15,28 +16,28 @@ from .models import MapData
 RESET = "\033[0m"
 BOLD = "\033[1m"
 
-_NAMED_COLORS = {
-    "black": "\033[90m",
-    "red": "\033[91m",
-    "green": "\033[92m",
-    "yellow": "\033[93m",
-    "blue": "\033[94m",
-    "magenta": "\033[95m",
-    "cyan": "\033[96m",
-    "white": "\033[97m",
-    "gray": "\033[37m",
-    "grey": "\033[37m",
-    "orange": "\033[38;5;208m",
-    "purple": "\033[38;5;135m",
-    "violet": "\033[38;5;177m",
-    "brown": "\033[38;5;130m",
-    "maroon": "\033[38;5;88m",
-    "darkred": "\033[38;5;124m",
-    "gold": "\033[38;5;220m",
-    "lime": "\033[38;5;154m",
-    "crimson": "\033[38;5;161m",
-    "rainbow": "\033[38;5;213m",
-}
+
+class _NamedColor(str, Enum):
+    BLACK = "\033[90m"
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    CYAN = "\033[96m"
+    WHITE = "\033[97m"
+    GRAY = "\033[37m"
+    GREY = "\033[37m"
+    ORANGE = "\033[38;5;208m"
+    PURPLE = "\033[38;5;135m"
+    VIOLET = "\033[38;5;177m"
+    BROWN = "\033[38;5;130m"
+    MAROON = "\033[38;5;88m"
+    DARKRED = "\033[38;5;124m"
+    GOLD = "\033[38;5;220m"
+    LIME = "\033[38;5;154m"
+    CRIMSON = "\033[38;5;161m"
+    RAINBOW = "\033[38;5;213m"
 
 
 def _fallback_color(name: str) -> str:
@@ -49,7 +50,11 @@ def color_for(name: Optional[str]) -> str:
     """Return the ANSI escape for a zone's color tag, or no color."""
     if not name:
         return ""
-    return _NAMED_COLORS.get(name.lower(), _fallback_color(name.lower()))
+    normalized = name.lower()
+    try:
+        return _NamedColor[normalized.upper()].value
+    except KeyError:
+        return _fallback_color(normalized)
 
 
 class TerminalVisualizer:

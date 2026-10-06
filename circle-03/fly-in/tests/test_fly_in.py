@@ -6,6 +6,7 @@ from io import StringIO
 from fly_in.parser import MapParseError, MapParser
 from fly_in.pathfinder import Pathfinder
 from fly_in.simulation import Simulation
+from fly_in.visualizer import color_for
 
 
 SAMPLE = """\
@@ -129,6 +130,18 @@ class FlyInTests(unittest.TestCase):
         # run() completing without a RuntimeError is itself the guarantee
         # that _choose_move() never over-booked a zone.
         self.assertEqual(simulation.turns, 2)
+
+    def test_named_colors_use_enum_palette(self) -> None:
+        """Named colors, including the gray aliases, keep their ANSI codes."""
+        self.assertEqual(color_for("red"), "\033[91m")
+        self.assertEqual(color_for("GOLD"), "\033[38;5;220m")
+        self.assertEqual(color_for("gray"), "\033[37m")
+        self.assertEqual(color_for("grey"), "\033[37m")
+
+    def test_unknown_color_uses_fallback_palette(self) -> None:
+        """Unknown names retain their deterministic fallback behavior."""
+        self.assertEqual(color_for("custom"), color_for("CUSTOM"))
+        self.assertEqual(color_for(None), "")
 
 
 if __name__ == "__main__":
