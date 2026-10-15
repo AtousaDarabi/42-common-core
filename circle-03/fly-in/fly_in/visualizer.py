@@ -1,127 +1,191 @@
-"""Terminal output helpers for Fly-in.
+"""Terminal output for Fly-in.
 
-Zones carry an optional, free-form ``color=`` tag (red, blue, gold,
-rainbow, ...). Rather than ignoring it, this visualizer maps whatever
-string the map author chose to a real ANSI color -- a fixed table for
-common names, and a stable hash-based 256-color fallback for anything
-else, so every map's own color scheme actually shows up in the
-terminal instead of a generic three-color UI palette.
+Two views are offered:
+
+* the default view prints exactly the subject's output format, one line
+  per turn (``D1-roof1 D2-corridorA``), with each destination zone
+  painted in the color given by its ``color=`` tag when writing to a
+  terminal;
+* ``--visual`` adds a dashboard around it: a zone legend with types and
+  capacities, the reference shortest route, and after every turn the
+  state of each occupied zone (a capacity bar), the drones still in
+  flight toward restricted zones, and the delivery progress.
+
+Zone colors are free-form words. Common names map to fixed ANSI codes;
+any other word gets a stable 256-color code derived from its letters,
+so every map's own color scheme shows up instead of a fixed palette.
 """
 
-from enum import Enum
 from typing import Optional
 
-from .models import MapData
+from .models import Drone, MapData
+from .pathfinder import RouteInfo
+from .simulation import TurnRecord
 
 RESET = "\033[0m"
 BOLD = "\033[1m"
+DIM = "\033[2m"
 
 
-class _NamedColor(str, Enum):
-    BLACK = "\033[90m"
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    MAGENTA = "\033[95m"
-    CYAN = "\033[96m"
-    WHITE = "\033[97m"
-    GRAY = "\033[37m"
-    GREY = "\033[37m"
-    ORANGE = "\033[38;5;208m"
-    PURPLE = "\033[38;5;135m"
-    VIOLET = "\033[38;5;177m"
-    BROWN = "\033[38;5;130m"
-    MAROON = "\033[38;5;88m"
-    DARKRED = "\033[38;5;124m"
-    GOLD = "\033[38;5;220m"
-    LIME = "\033[38;5;154m"
-    CRIMSON = "\033[38;5;161m"
-    RAINBOW = "\033[38;5;213m"
+class ColorPalette:
+    """Translate map color names into ANSI escape sequences."""
 
+    NAMED = {
+        "black": "\033[90m",
+        "red": "\033[91m",
+        "green": "\033[92m",
+        "yellow": "\033[93m",
+        "blue": "\033[94m",
+        "magenta": "\033[95m",
+        "cyan": "\033[96m",
+        "white": "\033[97m",
+        "gray": "\033[37m",
+        "grey": "\033[37m",
+        "orange": "\033[38;5;208m",
+        "purple": "\033[38;5;135m",
+        "violet": "\033[38;5;177m",
+        "brown": "\033[38;5;130m",
+        "maroon": "\033[38;5;88m",
+        "darkred": "\033[38;5;124m",
+        "gold": "\033[38;5;220m",
+        "lime": "\033[38;5;154m",
+        "crimson": "\033[38;5;161m",
+        "rainbow": "\033[38;5;213m",
+    }
 
-def _fallback_color(name: str) -> str:
-    """Deterministically map an unknown color name to a 256-color code."""
-    code = 17 + (sum(ord(char) for char in name) % 214)
-    return f"\033[38;5;{code}m"
+    @classmethod
+    def code_for(cls, name: Optional[str]) -> str:
+        """Return the ANSI escape for a color tag ('' for no color)."""
+        if not name:
+            return ""
+        normalized = name.lower()
+        if normalized in cls.NAMED:
+            return cls.NAMED[normalized]
+        return cls._fallback(normalized)
 
-
-def color_for(name: Optional[str]) -> str:
-    """Return the ANSI escape for a zone's color tag, or no color."""
-    if not name:
-        return ""
-    normalized = name.lower()
-    try:
-        return _NamedColor[normalized.upper()].value
-    except KeyError:
-        return _fallback_color(normalized)
+    @staticmethod
+    def _fallback(name: str) -> str:
+        """Deterministically map an unknown name to a 256-color code."""
+        code = 17 + (sum(ord(char) for char in name) % 214)
+        return f"\033[38;5;{code}m"
 
 
 class TerminalVisualizer:
-    """Render turns with readable, map-defined terminal colors."""
+    """Render the simulation as plain lines or as a colored dashboard."""
 
-    HEADER = "\033[96m"
-    ROUTE = "\033[93m"
-    TURN = "\033[92m"
+    def __init__(self, map_data: MapData, color: bool) -> None:
+        """Choose the map to describe and whether to emit ANSI colors."""
+        self.map_data = map_data
+        self.color = color
 
-    def __init__(self, plain: bool = False) -> None:
-        """Choose colored or plain output."""
-        self.plain = plain
-
-    def print_map_summary(self, map_data: MapData) -> None:
-        """Print a compact map summary and a per-zone color legend."""
-        print(self._color(self.HEADER, "Map loaded"))
-        print(f"  drones: {map_data.drone_count}")
-        print(f"  route:  {map_data.start} -> {map_data.end}")
-        print(f"  zones:  {len(map_data.zones)}")
-        for name in sorted(map_data.zones):
-            zone = map_data.zones[name]
-            label = f"{name} ({zone.kind})"
-            if zone.color and not self.plain:
-                print(f"    {color_for(zone.color)}{label}{RESET}")
-            else:
-                print(f"    {label}")
-
-    def print_route(self, path: list[str], cost: int) -> None:
-        """Print one example shortest route and its turn cost."""
-        heading = self._color(self.ROUTE, "Reference shortest path: ")
-        print(f"{heading}{' -> '.join(path)}  (cost {cost} turns)")
-        print(
-            "  (drones may spread across other equally-short routes "
-            "during the run)"
-        )
-
-    def print_turns(self, turns: list[str], map_data: MapData) -> None:
-        """Print each simulation turn, coloring known destination zones."""
-        for number, line in enumerate(turns, 1):
-            prefix = self._color(self.TURN, f"turn {number:02d}: ")
-            print(prefix + self._colorize_line(line, map_data))
-
-    def print_drone_routes(self, routes: dict[int, list[str]]) -> None:
-        """Print the actual path each drone travelled (BONUS)."""
-        print(self._color(self.HEADER, "Routes taken:"))
-        for identifier in sorted(routes):
-            path = " -> ".join(routes[identifier])
-            print(f"  D{identifier}: {path}")
-
-    def _colorize_line(self, line: str, map_data: MapData) -> str:
-        """Color each move token by its destination zone, if known."""
-        if self.plain:
-            return line
-        tokens = []
-        for token in line.split(" "):
-            drone_id, _, target = token.partition("-")
-            zone = map_data.zones.get(target)
-            if zone and zone.color:
-                tokens.append(
-                    f"{drone_id}-{color_for(zone.color)}{target}{RESET}"
-                )
-            else:
-                tokens.append(token)
-        return " ".join(tokens)
-
-    def _color(self, color: str, text: str) -> str:
-        """Apply ANSI color unless plain output was requested."""
-        if self.plain:
+    def paint(self, code: str, text: str) -> str:
+        """Wrap text in an ANSI code when colors are enabled."""
+        if not self.color or not code:
             return text
-        return f"{color}{text}{RESET}"
+        return f"{code}{text}{RESET}"
+
+    def zone(self, name: str) -> str:
+        """Return a zone name painted in its own map color."""
+        zone = self.map_data.zones.get(name)
+        color = zone.color if zone else None
+        return self.paint(ColorPalette.code_for(color), name)
+
+    def turn_line(self, record: TurnRecord) -> str:
+        """Return one turn in the subject's format, zones colored."""
+        if not self.color:
+            return record.line
+        painted = []
+        for token in record.moves:
+            drone, _, target = token.partition("-")
+            if target in self.map_data.zones:
+                painted.append(f"{drone}-{self.zone(target)}")
+            else:
+                origin, _, destination = target.partition("-")
+                painted.append(
+                    f"{drone}-{self.zone(origin)}-{self.zone(destination)}"
+                )
+        return " ".join(painted)
+
+    def print_turns(self, records: list[TurnRecord]) -> None:
+        """Print the simulation output: one line per turn, nothing else."""
+        for record in records:
+            print(self.turn_line(record))
+
+    def print_dashboard(
+        self, route_info: RouteInfo, records: list[TurnRecord]
+    ) -> None:
+        """Print the full ``--visual`` view of the simulation."""
+        self._print_header(route_info)
+        total = self.map_data.drone_count
+        for record in records:
+            title = self.paint(BOLD, f"Turn {record.number:>3}")
+            print(f"{title} | {self.turn_line(record)}")
+            print(f"{'':8}| {self._zone_states(record)}")
+            if record.in_flight:
+                flights = ", ".join(
+                    f"{drone} {self.zone(origin)}->{self.zone(target)}"
+                    for drone, origin, target in record.in_flight
+                )
+                print(f"{'':8}| in flight: {flights}")
+            print(f"{'':8}| delivered {record.delivered}/{total}")
+        summary = f"All {total} drones delivered in {len(records)} turns."
+        print(self.paint(BOLD, summary))
+
+    def print_routes(self, drones: list[Drone]) -> None:
+        """Print the full route each drone flew."""
+        print(self.paint(BOLD, "Routes taken:"))
+        for drone in drones:
+            route = " -> ".join(
+                self.zone(name) for name in drone.route(self.map_data.start)
+            )
+            print(f"  {drone.label} (arrives turn {drone.arrival_turn}): "
+                  f"{route}")
+
+    def print_statistics(self, statistics: dict[str, float | int]) -> None:
+        """Print the secondary performance metrics."""
+        print(self.paint(BOLD, "Statistics:"))
+        for key, value in statistics.items():
+            print(f"  {key.replace('_', ' ')}: {value}")
+
+    def _print_header(self, route_info: RouteInfo) -> None:
+        """Print the map overview and the zone legend."""
+        data = self.map_data
+        print(self.paint(BOLD, "Fly-in simulation"))
+        print(f"  drones: {data.drone_count}   zones: {len(data.zones)}   "
+              f"connections: {len(data.connections)}")
+        print(f"  from {self.zone(data.start)} to {self.zone(data.end)}")
+        print(self.paint(BOLD, "Zones:"))
+        for name in sorted(data.zones):
+            zone = data.zones[name]
+            capacity = (
+                "unlimited" if data.has_unlimited_capacity(name)
+                else f"max {zone.capacity}"
+            )
+            role = (
+                " (start)" if name == data.start
+                else " (end)" if name == data.end else ""
+            )
+            print(f"  {self.zone(name)}{role}: {zone.kind}, {capacity}")
+        path = " -> ".join(
+            self.zone(name) for name in route_info.reference_path
+        )
+        print(self.paint(BOLD, "Shortest route: ") + path
+              + f" ({route_info.reference_cost} turns for one drone)")
+        print()
+
+    def _zone_states(self, record: TurnRecord) -> str:
+        """Describe every occupied zone with a small capacity bar."""
+        data = self.map_data
+        parts = []
+        for name in sorted(record.occupancy):
+            count = record.occupancy[name]
+            if data.has_unlimited_capacity(name):
+                parts.append(f"{self.zone(name)} {count}")
+                continue
+            capacity = data.zones[name].capacity
+            if capacity <= 8:
+                bar = "#" * count + "." * (capacity - count)
+                parts.append(f"{self.zone(name)} [{bar}]")
+            else:
+                parts.append(f"{self.zone(name)} {count}/{capacity}")
+        return "  ".join(parts) if parts else self.paint(DIM, "(all clear)")

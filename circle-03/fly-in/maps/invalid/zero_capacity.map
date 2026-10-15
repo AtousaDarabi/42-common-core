@@ -1,0 +1,5 @@
+# Invalid: capacities must be positive integers
+nb_drones: 1
+start_hub: a 0 0
+end_hub: b 1 0
+connection: a-b [max_link_capacity=0]

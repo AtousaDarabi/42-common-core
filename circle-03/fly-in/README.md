@@ -1,185 +1,263 @@
-*This project has been created as part of the 42 curriculum by <your-42-login>.*
+*This project has been created as part of the 42 curriculum by <login>.*
 
 # Fly-in
 
 ## Description
 
-Fly-in is a Python 3 drone-routing simulation. It parses a map of connected
-zones, computes the true cheapest turn-cost from every zone to the end zone,
-and then moves a whole fleet of drones through the map turn by turn,
-spreading them across every equally-good route while respecting zone and
-connection capacities.
+Fly-in routes a fleet of drones from a start zone to an end zone through a
+network of connected zones, in as few simulation turns as possible, while
+respecting every movement rule of the subject: zone capacities
+(`max_drones`), connection capacities (`max_link_capacity`), two-turn
+flights into `restricted` zones, `blocked` zones that can never be entered,
+and `priority` zones that are preferred when routes tie.
+
+The program reads a map file, plans a conflict-free flight for every drone,
+replays the plans turn by turn while re-checking every rule, and prints the
+result in the subject's format (`D1-roof1 D2-corridorA`), with colors and an
+optional dashboard that shows what happens in every zone.
+
+Every provided benchmark map is solved in the minimum possible number of
+turns, including the challenger map (43 turns, record to beat: 45).
 
 ## Instructions
 
-Python 3.10 or later is required.
+Python 3.10 or later. The program itself only uses the standard library;
+`requirements.txt` lists the development tools (`flake8`, `mypy`).
 
 ```bash
-make install
-make test
-make run
+make install      # creates .venv and installs flake8 + mypy into it
+make run          # runs maps/example.map with the --visual dashboard
+make run MAP=maps/benchmarks/hard/02_capacity_hell.txt
+make test         # unit tests
+make benchmark    # turns for every subject benchmark map
+make lint         # flake8 . and mypy . with the subject's flags
+make lint-strict  # flake8 . and mypy . --strict
+make debug        # same as run, inside pdb
+make clean        # removes __pycache__ and .mypy_cache (fclean also removes .venv)
 ```
 
-Run a specific map directly:
+Running a map directly:
 
 ```bash
-python3 main.py maps/example.map
-python3 main.py maps/example.map --plain
+python3 main.py maps/example.map                # subject output format only
+python3 main.py maps/example.map --visual       # dashboard
+python3 main.py maps/example.map --stats        # secondary metrics
+python3 main.py maps/example.map --routes       # full route of every drone
 ```
 
-Optional bonus flags:
+| Option | Effect |
+|---|---|
+| (none) | One line per turn, exactly the subject format. Zones are colored when writing to a terminal, plain text when piped to a file or a checker. |
+| `--visual` | Zone legend, reference route, and after each turn: the occupancy of every zone as a capacity bar, the drones in flight toward restricted zones, and the number delivered. |
+| `--stats` | Turns, total moves, drones moved per turn, average turns per drone, total path cost, distinct routes used. |
+| `--routes` | Every drone's route and arrival turn. |
+| `--plain` / `--color` | Never / always use ANSI colors. |
+| `--lenient-transit` | Frees a connection on the turn a drone lands in a restricted zone (see "Movement rules"). |
 
-```bash
-python3 main.py maps/example.map --stats    # turn/move/route metrics
-python3 main.py maps/example.map --routes   # the actual path each drone took
-```
+Errors (unreadable file, invalid map, unreachable goal) print one clear line
+starting with `Error:` on stderr, with the line number for map syntax
+errors, and exit with status 1. The program never shows a traceback.
 
-Sample maps:
+Maps in this repository:
 
-- `maps/example.map` — the map from the subject.
-- `maps/fork_demo.map` — a minimal map that isolates the multi-path
-  requirement: two disjoint, equal-cost, capacity-1 branches. A router that
-  only ever finds one path serializes all 4 drones through a single branch
-  (5 turns); splitting them 2/2 finishes in 3.
-- `maps/benchmarks/{easy,medium,hard,challenger}/` — the subject's own named
-  benchmark categories (linear path, simple fork, dead-end trap, circular
-  loop, priority puzzle, maze nightmare, capacity hell, the ultimate
-  challenge, and the challenger "Impossible Dream" map).
-
-## Mandatory implementation
-
-- `fly_in/models.py` — the object-oriented domain model: `Zone`, `Connection`,
-  `MapData`, `Drone`.
-- `fly_in/parser.py` — validates that `nb_drones` is the first line, drone
-  counts, hub uniqueness, coordinates, zone/connection metadata (including
-  rejecting unknown metadata keys and dashes in zone names), zone types,
-  capacities, comments, and duplicate connections, with line-numbered errors.
-- `fly_in/pathfinder.py` — a single Dijkstra pass, rooted at the end zone,
-  computes the minimum remaining turn-cost from *every* zone to the goal
-  (`RouteInfo.distances`). No graph library (`networkx`, `graphlib`, ...) is
-  used, only `heapq` over the adjacency lists already stored on `Zone`.
-- `fly_in/simulation.py` — schedules the whole fleet turn by turn from that
-  one cost field (see "Algorithm" below), applying zone capacity, connection
-  capacity, restricted-zone two-turn transit, and delivery rules.
-- `fly_in/visualizer.py` — colored terminal output driven by each zone's own
-  `color=` metadata (see "Visual representation" below).
+- `maps/example.map`: the example from the subject.
+- `maps/benchmarks/{easy,medium,hard,challenger}/`: the subject's benchmark maps.
+- `maps/edge_cases/`: small maps for single rules (uneven fork, equal fork,
+  restricted end zone, connection written backwards, blocked shortcut,
+  queueing in front of a narrow bridge).
+- `maps/invalid/`: one broken map per parser error.
+- `maps/large/`: stress tests with 5,000 and 10,000 drones.
 
 ## Algorithm
 
-**Routing is not a single fixed path shared by every drone.** The
-pathfinder computes, once, the cheapest possible remaining cost from every
-zone to the goal (`Pathfinder.compute`, one Dijkstra run, O((V+E) log V)).
-That cost field is then reused for the entire run — it is never recomputed
-per turn or per drone, which keeps memory and CPU cost flat regardless of
-fleet size.
+The work is split into three steps, each in its own class.
 
-Every turn, each active drone independently looks at its neighboring zones,
-discards any that would not strictly reduce its remaining cost (which is
-also what makes it ignore dead ends and never backtrack or loop — a zone
-that doesn't get you closer is never worth entering), and tries its
-cheapest remaining option first (ties go to `priority` zones, per the
-subject). If that option's zone or connection is already full for this
-turn, it falls through to the next-cheapest option instead of just
-waiting. That fallback is what makes a fleet split itself across several
-equally-short routes under congestion, without ever being told to.
+### 1. Static turns-to-goal labels (`fly_in/pathfinder.py`)
 
-This is essentially equal-cost multi-path routing applied turn-by-turn.
-Per turn the simulation loop does O(D · deg) work (D = active drones, deg =
-average zone degree), so the whole run is roughly O(D · T · deg) for T
-turns — no repeated shortest-path searches.
+One Dijkstra search, run backwards from the end zone, gives every zone the
+minimum number of turns a drone needs from there to the goal on an empty map.
+Entering a zone costs its movement cost (1, or 2 for `restricted`), blocked
+zones are skipped, and paths are not allowed to pass back through the start
+zone. These labels are exact lower bounds, computed once and reused by every
+drone. No graph library is used: the priority queue is `heapq` and the graph
+is the adjacency lists stored on each `Zone`.
 
-### Measured results
+### 2. Flight planning with safe intervals (`fly_in/planner.py`)
 
-All figures below were produced by this implementation and independently
-re-validated by replaying the emitted turn-by-turn output through a second,
-separate checker that re-derives zone/connection occupancy from scratch
-(not by trusting the simulation's own bookkeeping).
+Drones are planned one at a time. A shared **reservation table** stores, for
+every zone and every connection, how many drones use it in each turn. Each
+new drone searches for the **earliest turn at which it can reach the end**
+given everything already reserved, then reserves its own flight so later
+drones route around it.
 
-| Map | Drones | Turns | Subject target |
-|---|---|---|---|
-| `easy/01_linear_path` | 2 | 4 | ≤ 6 |
-| `easy/02_simple_fork` | 3 | 5 | ≤ 6 |
-| `easy/03_basic_capacity` | 4 | 6 | ≤ 8 |
-| `medium/01_dead_end_trap` | 5 | 8 | ≤ 15 |
-| `medium/02_circular_loop` | 6 | 16 | ≤ 20 |
-| `medium/03_priority_puzzle` | 4 | 7 | ≤ 12 |
-| `hard/01_maze_nightmare` | 8 | 14 | ≤ 45 |
-| `hard/02_capacity_hell` | 12 | 18 | ≤ 60 |
-| `hard/03_ultimate_challenge` | 15 | 26 | ≤ 35 |
-| `challenger/01_the_impossible_dream` (bonus, ungraded) | 25 | 45 | reference: 45 |
+Because the search minimizes the arrival turn rather than the path length,
+drones automatically spread over several routes, including longer ones when
+the short one is congested. On `maps/edge_cases/uneven_fork.map` (a 2-turn
+branch and a 3-turn branch, 10 drones) this gives the optimal 7 turns, where
+always taking the shortest branch needs 11. Waiting is part of the search, so
+strategic waiting and conflict avoidance need no special handling, and
+deadlocks cannot happen: a drone only commits to moves already known to be
+free.
 
-Every mandatory benchmark is met with room to spare. The challenger map
-*ties* the subject's own reference record (45 turns) rather than beating
-it — an earlier version of this run showed 39 turns, but that number came
-from a bug (a drone landing from a two-turn restricted transit was still
-being handed a second, bonus move in that same turn) that has since been
-fixed; 45 is the honest number for the current, correct implementation.
-Beating the record further is explicitly optional and ungraded, so it
-wasn't pursued past a correct baseline.
+The search is **Safe Interval Path Planning** (SIPP) driven by **A\***:
 
-On `easy/02_simple_fork` specifically, only one route ends up used even
-though two exist: the single-file gate leading *into* the fork (capacity 1)
-is the real bottleneck, and 3 drones never queue up at the fork itself long
-enough to need the second branch. `maps/fork_demo.map` is included
-separately to demonstrate the actual split under real contention.
+- A *safe interval* of a zone is a maximal run of turns during which the zone
+  still has room. Arriving earlier inside the same safe interval is never
+  worse, because the drone can wait there. So the search needs one node per
+  `(zone, safe interval)` instead of one per `(zone, turn)`.
+- From a node, the drone may leave on any turn before its zone fills up. For
+  each neighbor, the search computes the earliest arrival in each of the
+  neighbor's safe intervals, checking the connection's capacity on the turn
+  of the move (and on both turns of a restricted flight).
+- A\* orders nodes by `arrival + label`. The labels never overestimate, so the
+  first time the end zone comes out of the queue, its arrival is the earliest
+  possible. Among equally early arrivals, the route through fewer
+  non-priority zones wins.
+- Each zone and connection keeps a "next free turn" union-find structure and a
+  sorted list of full turns, so "first turn with room" and "end of this safe
+  interval" are answered in near-constant time.
+- Two pruning rules keep the search small. The arrival is bounded by "wait
+  at the start until every reservation is over, then fly the shortest
+  route", and reservations only grow, so no drone can leave earlier than the
+  previous drone could have.
+
+### 3. Replay and validation (`fly_in/simulation.py`)
+
+The `Simulation` engine replays all plans turn by turn, builds the output
+lines, records the occupancy of every zone after each turn for the
+visualizer, and independently enforces every rule: adjacency, blocked zones,
+no re-entry into the start, restricted flights landing on the very next
+turn, zone capacities and connection capacities. If a plan ever broke a rule
+it would raise instead of printing an invalid simulation.
+
+### Complexity and memory
+
+- Labels: one Dijkstra, `O((V + E) log V)`.
+- Planning: per drone, an A\* over `(zone, safe interval)` nodes. On the
+  provided maps every zone has one or two safe intervals (it is either free
+  or saturated by a pipeline of drones), so each drone costs roughly
+  `O((V + E) log V)` and the fleet costs roughly `N` times that. Paths are
+  never recalculated: each drone is planned exactly once, and only the
+  static labels are cached and shared.
+- Memory: the reservation table holds one entry per drone per turn spent
+  outside the start, `O(N x route length)`.
+- Measured with `time python3 main.py ...`: 5,000 drones on the ultimate
+  challenge map in about 1 s, 10,000 drones on the challenger map in about
+  2.6 s.
+
+## Movement rules as implemented
+
+- Every turn, a drone may move to an adjacent zone, start a two-turn flight
+  toward a restricted zone, or wait. A drone in flight must land on the next
+  turn; it is printed as `D<id>-<from>-<to>` while in flight, named in the
+  direction of travel.
+- After all moves of a turn, no zone holds more than `max_drones` drones
+  (start and end zones are unlimited). A drone leaving a zone frees its place
+  in that same turn.
+- No connection carries more than `max_link_capacity` drones in one turn.
+- **Restricted flights:** the subject says the drone "occupies the
+  connection during transit". By default a flight holds its connection on
+  both turns, including the landing turn. This is the conservative reading:
+  output produced this way is valid under either interpretation. With
+  `--lenient-transit` the connection is released on the landing turn
+  instead, which is faster on maps made of single-capacity restricted chains
+  (`medium/02_circular_loop`: 11 turns instead of 16).
 
 ## Visual representation
 
-The terminal visualizer reads each zone's own `color=` tag from the map
-file (red, blue, gold, "rainbow", anything) and renders it with a matching
-ANSI color: common names map to a fixed palette, and any other name falls
-back to a stable, deterministic 256-color choice so it's still visually
-distinct. This applies to the per-zone legend printed at startup and to
-each drone's destination zone in the turn-by-turn log, so a map author's
-own color scheme is what actually shows up, not a fixed three-color UI
-palette. Use `--plain` to disable this. `--routes` additionally prints the
-literal path each drone took, which is the easiest way to see the
-multi-path behavior directly.
+- **Default view:** the plain turn lines, with each destination zone painted
+  in the color from its `color=` tag. Common names (red, blue, gold, ...) use
+  fixed ANSI colors; any other word gets a stable 256-color code, so every
+  map's own color scheme shows up. Colors are switched off automatically
+  when the output is not a terminal, so redirected output is exactly the
+  subject format.
+- **`--visual` dashboard:** a legend of every zone with its type and
+  capacity, the reference shortest route, and after each turn the moves,
+  every occupied zone with a capacity bar (`hall [##.]` = 2 of 3 places
+  used), the drones currently in flight, and `delivered k/N`. Bottlenecks
+  are visible at a glance: a full bar that stays full turn after turn is the
+  zone limiting the throughput.
+- **`--routes` and `--stats`** show each drone's route and the secondary
+  metrics from the subject (drones moved per turn, average turns per drone,
+  total path cost).
 
-## Bonus features
+## Performance
 
-- `--stats`: turn count, total moves, drone count, average moves per drone,
-  and how many *distinct* routes were actually used by the fleet.
-- `--routes`: the full path taken by every individual drone.
-- Equal-cost multi-path routing (see "Algorithm").
-- The subject's full easy/medium/hard/challenger benchmark set is bundled
-  under `maps/benchmarks/` with measured results above.
+All runs use the default (conservative) transit rule. The lower bound is
+the shortest route length plus one turn per drone through the single-drone
+choke point (the start's exit or the end's entrance). Every result reaches
+it, so no valid schedule can do better.
 
-## Tests and quality
+| Map | Drones | Target | Turns | Lower bound |
+|---|---|---|---|---|
+| easy/01_linear_path | 2 | ≤ 6 | 4 | 4 |
+| easy/02_simple_fork | 3 | ≤ 6 | 5 | 5 |
+| easy/03_basic_capacity | 4 | ≤ 8 | 6 | 6 |
+| medium/01_dead_end_trap | 5 | ≤ 15 | 8 | 8 |
+| medium/02_circular_loop | 6 | ≤ 20 | 16 | 16 |
+| medium/03_priority_puzzle | 4 | ≤ 12 | 7 | 7 |
+| hard/01_maze_nightmare | 8 | ≤ 45 | 14 | 14 |
+| hard/02_capacity_hell | 12 | ≤ 60 | 18 | 18 |
+| hard/03_ultimate_challenge | 15 | ≤ 35 | 26 | 26 |
+| challenger/01_the_impossible_dream | 25 | beat 45 | 43 | 43 |
+
+The challenger bound: only one drone per turn can enter `gate_hell1`, and the
+fastest route from there takes 18 more turns, so drone 25 cannot arrive
+before turn 25 + 18 = 43. (The `maps/benchmarks/README.md` from the subject
+mentions a record of 41, which is below this bound under the subject's
+rules; the subject itself gives 45.)
+
+## Bonus
+
+- **Exceptional performance:** every benchmark is at or below its target,
+  and at its lower bound.
+- **Challenger map:** solved in 43 turns, beating the reference record of 45.
+
+## Tests and code quality
 
 ```bash
 make test
 make lint
+make lint-strict
 ```
 
-Tests cover parsing (including the new first-line, dash-in-name, and
-unknown-metadata rejections), the pathfinder, basic delivery, that a fleet
-actually splits across two equal-cost branches under contention, and that a
-drone never enters a strictly worse (dead-end) branch. `flake8` and `mypy
---strict` both pass with zero findings.
+`tests/test_fly_in.py` contains a `ReplayChecker` that re-derives every
+position, zone occupancy and connection use from the printed output alone,
+without trusting the simulation engine. The tests run it on every bundled map
+in both transit modes. They also cover every parser error (with line
+numbers), unreadable files, blocked or unreachable goals, priority
+tie-breaking, the direction of flight tokens, the benchmark targets, the
+challenger's lower bound, a 2,000-drone fleet, and the CLI (exact output
+format, error messages without traceback, dashboard content). `flake8` and
+`mypy` (both the subject's flags and `--strict`) report no issues.
 
-## Resources and AI use
+## Resources
 
-- Python documentation: https://docs.python.org/3/
-- Python `dataclasses`: https://docs.python.org/3/library/dataclasses.html
-- Python `heapq`: https://docs.python.org/3/library/heapq.html
-- Python `unittest`: https://docs.python.org/3/library/unittest.html
-- Dijkstra's algorithm (general reference for the shortest-cost labeling
-  used by the pathfinder).
-- Equal-cost multi-path routing (general networking concept that motivated
-  the turn-by-turn candidate-fallback scheme in `simulation.py`).
+- Python documentation: `heapq`, `bisect`, `dataclasses`, `argparse`,
+  `unittest` (https://docs.python.org/3/).
+- E. W. Dijkstra, "A note on two problems in connexion with graphs" (1959).
+- P. Hart, N. Nilsson, B. Raphael, "A Formal Basis for the Heuristic
+  Determination of Minimum Cost Paths" (A\*, 1968).
+- M. Phillips, M. Likhachev, "SIPP: Safe Interval Path Planning for Dynamic
+  Environments", ICRA 2011.
+- D. Silver, "Cooperative Pathfinding", AIIDE 2005 (planning agents one at a
+  time against a shared reservation table).
+- Union-find "next free slot" structure: R. Tarjan, "Efficiency of a Good
+  But Not Linear Set Union Algorithm" (1975).
 
-AI was used to review an earlier version of this project against the
-subject, which surfaced the core issue this version fixes: the original
-pathfinder computed one single route and handed every drone the exact same
-copy of it, so the fleet never actually split across multiple paths — a
-map with two disjoint equal-cost branches took 5 turns instead of the
-achievable 3. AI was then used to help redesign and implement the
-turn-by-turn multi-path router, fix related gaps (parser validation,
-zone-color visualization, a same-turn double-move bug the new routing
-exposed in restricted-zone transits), extend the test suite, and write this
-README. The resulting code, its behavior, and the trade-offs described
-above (e.g. why `simple_fork` doesn't show a split, why the challenger
-number changed from 39 to 45) must still be reviewed, understood, and
-explained by the learner during peer evaluation — this file spells out
-*why* each choice was made specifically so that's possible.
+### Use of AI
+
+AI (Claude) was used to:
+
+- review the project against the subject, run flake8/mypy, and test it on
+  every map with an independent output checker;
+- find and fix problems in an earlier version: a traceback on a missing
+  file, a fixed 10,000-turn limit that broke large fleets, drones that only
+  ever used the shortest route, a challenger result tied at 45 instead of
+  beating it, and a connection that could be double-booked while a drone
+  landed in a restricted zone;
+- redesign the router into the reservation-table and SIPP planner described
+  above, and write the tests, the extra maps and this README.
+
+All code was then read, tested and discussed so that every part can be
+explained during the peer review.

@@ -1,0 +1,5 @@
+# Invalid: metadata must be key=value pairs
+nb_drones: 1
+start_hub: a 0 0 [color]
+end_hub: b 1 0
+connection: a-b

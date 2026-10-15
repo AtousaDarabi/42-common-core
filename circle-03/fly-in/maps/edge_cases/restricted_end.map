@@ -1,0 +1,7 @@
+# The end zone itself is restricted: entering it takes two turns.
+nb_drones: 3
+start_hub: start 0 0 [color=green]
+end_hub: vault 2 0 [zone=restricted color=red]
+hub: lobby 1 0 [max_drones=2]
+connection: start-lobby [max_link_capacity=2]
+connection: lobby-vault [max_link_capacity=2]

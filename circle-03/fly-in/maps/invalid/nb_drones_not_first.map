@@ -1,0 +1,5 @@
+# Invalid: nb_drones must come first
+start_hub: a 0 0
+nb_drones: 1
+end_hub: b 1 0
+connection: a-b

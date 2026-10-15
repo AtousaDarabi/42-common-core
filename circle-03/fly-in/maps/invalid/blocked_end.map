@@ -1,0 +1,5 @@
+# Invalid: the end zone is blocked
+nb_drones: 1
+start_hub: a 0 0
+end_hub: b 1 0 [zone=blocked]
+connection: a-b

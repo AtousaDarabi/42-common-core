@@ -1,0 +1,14 @@
+# Two branches of different length, every zone and connection capacity 1.
+# Using only the 2-turn branch takes 11 turns; also feeding the 3-turn
+# branch brings it down to the optimal 7.
+nb_drones: 10
+start_hub: start 0 0 [color=green]
+end_hub: goal 3 0 [color=yellow]
+hub: short 1 0 [color=blue]
+hub: long1 1 1 [color=cyan]
+hub: long2 2 1 [color=cyan]
+connection: start-short
+connection: short-goal
+connection: start-long1
+connection: long1-long2
+connection: long2-goal

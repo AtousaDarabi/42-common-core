@@ -1,0 +1,6 @@
+# Invalid: the end cannot be reached
+nb_drones: 1
+start_hub: a 0 0
+end_hub: b 1 0
+hub: c 2 0
+connection: a-c

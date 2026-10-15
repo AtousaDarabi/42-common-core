@@ -1,0 +1,13 @@
+# The direct route is blocked; drones must go around it.
+nb_drones: 4
+start_hub: a 0 0
+end_hub: z 2 0
+hub: wall 1 0 [zone=blocked color=gray]
+hub: north 1 1 [max_drones=2]
+hub: south 1 -1
+connection: a-wall
+connection: wall-z
+connection: a-north [max_link_capacity=2]
+connection: north-z [max_link_capacity=2]
+connection: a-south
+connection: south-z
