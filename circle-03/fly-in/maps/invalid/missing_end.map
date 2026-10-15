@@ -1,0 +1,5 @@
+# Invalid: no end_hub
+nb_drones: 2
+start_hub: s 0 0
+hub: a 1 0
+connection: s-a

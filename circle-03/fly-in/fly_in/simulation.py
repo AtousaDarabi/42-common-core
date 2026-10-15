@@ -1,165 +1,224 @@
-"""Turn-based, capacity-aware, multi-path drone simulation.
+"""Turn-by-turn replay of the planned flights.
 
-Every drone is only told the map's cost-to-goal field (see
-``fly_in.pathfinder.Pathfinder``). Each turn, every drone independently
-looks at its currently reachable neighbors, throws out any that would
-not reduce its remaining cost (which rules out dead ends and backward
-loops for free -- a zone that does not get you closer is never worth
-entering), and tries the cheapest of what is left first. If that
-neighbor's zone or connection is already full this turn it falls back
-to the next-cheapest option instead of just waiting, which is what
-lets a fleet split itself across several equally good routes without
-being told to.
-
-This also means routes are never pre-computed and stored per drone:
-there is nothing to recompute or invalidate mid-run, only the one
-map-wide distance field computed once up front.
+The planner decides *what* every drone does; the simulation engine
+plays those plans back one turn at a time, produces the output lines,
+records the state of every zone after each turn (for the visualizer),
+and independently enforces every movement rule of the subject. If a
+plan ever broke a rule (adjacency, blocked or restricted zones, zone
+capacity, connection capacity, landing after exactly one in-flight
+turn), the engine raises instead of printing an invalid simulation.
 """
 
 from collections import defaultdict
+from dataclasses import dataclass, field
 from typing import Union
 
-from .models import Drone, MapData
+from .models import Drone, MapData, Move
+from .pathfinder import RouteInfo
+from .planner import FlightPlanner
+
+
+@dataclass
+class TurnRecord:
+    """Everything that happened in one simulation turn."""
+
+    number: int
+    moves: list[str]
+    occupancy: dict[str, int]
+    in_flight: list[tuple[str, str, str]] = field(default_factory=list)
+    delivered: int = 0
+
+    @property
+    def line(self) -> str:
+        """Return the turn in the subject's output format."""
+        return " ".join(self.moves)
 
 
 class Simulation:
-    """Schedule a fleet of drones while respecting capacity limits."""
+    """Plan the fleet, then replay and validate it turn by turn."""
 
-    def __init__(self, map_data: MapData, distances: dict[str, int]) -> None:
-        """Create drones at the map's start zone."""
-        self.map_data = map_data
-        self.distances = distances
-        self.drones = [
-            Drone(identifier, map_data.start)
-            for identifier in range(1, map_data.drone_count + 1)
-        ]
-        self.turns = 0
+    def __init__(
+        self,
+        map_data: MapData,
+        route_info: RouteInfo,
+        strict_transit: bool = True,
+    ) -> None:
+        """Store the map, the static routing labels and the transit rule.
 
-    def run(self, max_turns: int = 10000) -> list[str]:
-        """Run until every drone arrives and return formatted turn lines."""
-        end = self.map_data.end
-        output: list[str] = []
-        while not all(drone.is_delivered(end) for drone in self.drones):
-            if self.turns >= max_turns:
-                raise RuntimeError("simulation exceeded the turn limit")
-            self.turns += 1
-            moves = self._advance_turn()
-            if moves:
-                output.append(" ".join(moves))
-        return output
-
-    def _advance_turn(self) -> list[str]:
-        """Land in-flight drones, then greedily schedule new movements.
-
-        A drone that lands this turn has just spent its whole turn
-        arriving -- it must not also get a bonus move in the same
-        turn, so it is excluded from this turn's departure scheduling
-        below via ``just_arrived``.
+        Args:
+            map_data: The parsed map.
+            route_info: Turns-to-goal labels from the pathfinder.
+            strict_transit: Whether a drone landing in a restricted zone
+                still counts against the connection's capacity on its
+                landing turn (see ``fly_in.planner.ReservationTable``).
         """
-        moves: list[str] = []
-        just_arrived: set[int] = set()
-        for drone in self.drones:
-            if drone.transit_to is None:
-                continue
-            destination = drone.complete_transit()
-            moves.append(f"D{drone.identifier}-{destination}")
-            just_arrived.add(drone.identifier)
+        self.map_data = map_data
+        self.route_info = route_info
+        self.strict_transit = strict_transit
+        self.drones: list[Drone] = []
+        self.records: list[TurnRecord] = []
 
-        end = self.map_data.end
-        occupied = self._occupied_zones()
-        reserved_links: defaultdict[frozenset[str], int] = defaultdict(int)
-        reserved_destinations: defaultdict[str, int] = defaultdict(int)
+    @property
+    def turns(self) -> int:
+        """Return the number of turns needed to deliver every drone."""
+        return len(self.records)
 
-        active = [
-            drone
-            for drone in self.drones
-            if drone.transit_to is None
-            and drone.identifier not in just_arrived
-            and not drone.is_delivered(end)
-        ]
-        active.sort(
-            key=lambda drone: (
-                self.distances.get(drone.zone, float("inf")),
-                drone.identifier,
-            )
+    def run(self) -> list[TurnRecord]:
+        """Plan every drone, replay the plans and return all turns."""
+        planner = FlightPlanner(
+            self.map_data, self.route_info.distances, self.strict_transit
         )
+        self.drones = planner.plan_all()
+        self.records = self._replay()
+        return self.records
 
-        for drone in active:
-            target = self._choose_move(
-                drone, occupied, reserved_links, reserved_destinations
+    def _replay(self) -> list[TurnRecord]:
+        """Apply the planned moves turn by turn while checking the rules."""
+        map_data = self.map_data
+        by_turn: defaultdict[int, list[tuple[Drone, Move]]] = defaultdict(
+            list
+        )
+        for drone in self.drones:
+            for move in drone.moves:
+                by_turn[move.turn].append((drone, move))
+        last_turn = max((drone.arrival_turn for drone in self.drones),
+                        default=0)
+        position = {drone.identifier: map_data.start for drone in self.drones}
+        flying: dict[int, Move] = {}
+        occupancy: defaultdict[str, int] = defaultdict(int)
+        occupancy[map_data.start] = len(self.drones)
+        delivered = 0
+        records: list[TurnRecord] = []
+        for turn in range(1, last_turn + 1):
+            link_use: defaultdict[frozenset[str], int] = defaultdict(int)
+            tokens: list[str] = []
+            for drone, move in by_turn.get(turn, []):
+                self._check_move(drone, move, position, flying)
+                tokens.append(f"{drone.label}-{move.token}")
+                delivered += self._apply_move(
+                    drone, move, position, flying, occupancy, link_use
+                )
+            for identifier, move in flying.items():
+                if move.turn != turn:
+                    raise RuntimeError(
+                        f"turn {turn}: D{identifier} did not land after "
+                        "its in-flight turn"
+                    )
+            self._check_capacities(turn, link_use, occupancy)
+            records.append(
+                TurnRecord(
+                    turn,
+                    tokens,
+                    {zone: n for zone, n in occupancy.items() if n > 0},
+                    [(f"D{i}", m.origin, m.destination)
+                     for i, m in sorted(flying.items())],
+                    delivered,
+                )
             )
-            if target is None:
-                continue
-            destination = target
-            current = drone.zone
-            connection = self.map_data.connection_between(current, destination)
-            zone = self.map_data.zones[destination]
-            reserved_links[connection.key] += 1
-            reserved_destinations[destination] += 1
-            occupied[current] -= 1
-            if zone.movement_cost == 2:
-                drone.begin_transit(destination, connection.name())
-                moves.append(f"D{drone.identifier}-{connection.name()}")
-            else:
-                drone.arrive(destination)
-                moves.append(f"D{drone.identifier}-{destination}")
-        return moves
+        if delivered != len(self.drones):
+            raise RuntimeError("not every drone reached the end zone")
+        return records
 
-    def _choose_move(
+    def _apply_move(
         self,
         drone: Drone,
-        occupied: "defaultdict[str, int]",
-        reserved_links: "defaultdict[frozenset[str], int]",
-        reserved_destinations: "defaultdict[str, int]",
-    ) -> Union[str, None]:
-        """Pick the best still-available neighbor, or None to wait."""
-        current = drone.zone
-        current_distance = self.distances.get(current, float("inf"))
-        candidates: list[tuple[int, int, str]] = []
-        for neighbor in self.map_data.zones[current].neighbors:
-            zone = self.map_data.zones[neighbor]
-            if zone.blocked:
-                continue
-            neighbor_distance = self.distances.get(neighbor)
-            if neighbor_distance is None:
-                continue
-            if neighbor_distance >= current_distance:
-                continue
-            tie_break = 0 if zone.is_priority else 1
-            candidates.append((neighbor_distance, tie_break, neighbor))
-        candidates.sort()
+        move: Move,
+        position: dict[int, str],
+        flying: dict[int, Move],
+        occupancy: defaultdict[str, int],
+        link_use: defaultdict[frozenset[str], int],
+    ) -> int:
+        """Update positions and counters for one move.
 
-        for _, _, destination in candidates:
-            connection = self.map_data.connection_between(current, destination)
-            if reserved_links[connection.key] >= connection.capacity:
+        Returns:
+            1 if the move delivers the drone to the end zone, else 0.
+        """
+        landing = drone.identifier in flying
+        if self.strict_transit or not landing:
+            link_use[move.link] += 1
+        if move.in_flight:
+            occupancy[move.origin] -= 1
+            flying[drone.identifier] = move
+            return 0
+        if landing:
+            del flying[drone.identifier]
+        else:
+            occupancy[move.origin] -= 1
+        position[drone.identifier] = move.destination
+        if move.destination == self.map_data.end:
+            return 1
+        occupancy[move.destination] += 1
+        return 0
+
+    def _check_move(
+        self,
+        drone: Drone,
+        move: Move,
+        position: dict[int, str],
+        flying: dict[int, Move],
+    ) -> None:
+        """Raise if one move breaks a movement rule."""
+        zones = self.map_data.zones
+        where = f"turn {move.turn}: {drone.label}"
+        if drone.identifier in flying:
+            started = flying[drone.identifier]
+            if move.in_flight or move.destination != started.destination:
+                raise RuntimeError(
+                    f"{where} must land in {started.destination}"
+                )
+            return
+        if move.origin != position[drone.identifier]:
+            raise RuntimeError(f"{where} is not in {move.origin}")
+        if move.link not in self.map_data.connections:
+            raise RuntimeError(f"{where} uses a missing connection")
+        target = zones[move.destination]
+        if target.blocked or move.destination == self.map_data.start:
+            raise RuntimeError(f"{where} enters forbidden zone {target.name}")
+        if target.is_restricted != move.in_flight:
+            raise RuntimeError(
+                f"{where} has the wrong timing for {target.name}"
+            )
+
+    def _check_capacities(
+        self,
+        turn: int,
+        link_use: dict[frozenset[str], int],
+        occupancy: dict[str, int],
+    ) -> None:
+        """Raise if a zone or connection is over capacity after a turn."""
+        for link, used in link_use.items():
+            capacity = self.map_data.connections[link].capacity
+            if used > capacity:
+                name = "-".join(sorted(link))
+                raise RuntimeError(f"turn {turn}: connection {name} overused")
+        for zone, count in occupancy.items():
+            if self.map_data.has_unlimited_capacity(zone):
                 continue
-            zone = self.map_data.zones[destination]
-            if destination != self.map_data.end:
-                free = zone.capacity - occupied[destination]
-                free -= reserved_destinations[destination]
-                if free <= 0:
-                    continue
-            return destination
-        return None
+            if count > self.map_data.zones[zone].capacity:
+                raise RuntimeError(f"turn {turn}: zone {zone} over capacity")
 
-    def _occupied_zones(self) -> "defaultdict[str, int]":
-        """Count drones currently occupying each zone."""
-        end = self.map_data.end
-        occupied: defaultdict[str, int] = defaultdict(int)
-        for drone in self.drones:
-            if drone.transit_to is None and not drone.is_delivered(end):
-                occupied[drone.zone] += 1
-        return occupied
-
-    def statistics(self, output: list[str]) -> dict[str, Union[float, int]]:
-        """Return optional performance metrics for the bonus report."""
-        moved = sum(len(line.split()) for line in output)
-        average = moved / self.map_data.drone_count
-        distinct_routes = len({tuple(drone.route) for drone in self.drones})
+    def statistics(self) -> dict[str, Union[float, int]]:
+        """Return the secondary metrics suggested by the subject."""
+        drone_count = len(self.drones)
+        moves = sum(len(record.moves) for record in self.records)
+        path_cost = sum(
+            self.map_data.zones[move.destination].movement_cost
+            for drone in self.drones
+            for move in drone.moves
+            if not move.in_flight
+        )
+        arrival = sum(drone.arrival_turn for drone in self.drones)
+        routes = {
+            tuple(drone.route(self.map_data.start)) for drone in self.drones
+        }
         return {
             "turns": self.turns,
-            "drones": self.map_data.drone_count,
-            "moves": moved,
-            "average_moves_per_drone": round(average, 2),
-            "distinct_routes_used": distinct_routes,
+            "drones": drone_count,
+            "total_moves": moves,
+            "average_drones_moved_per_turn": round(
+                moves / max(self.turns, 1), 2
+            ),
+            "average_turns_per_drone": round(arrival / drone_count, 2),
+            "total_path_cost": path_cost,
+            "distinct_routes_used": len(routes),
         }

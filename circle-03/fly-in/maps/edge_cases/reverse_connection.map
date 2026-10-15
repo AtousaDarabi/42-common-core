@@ -1,0 +1,10 @@
+# Connections written "backwards": the in-flight token still reads
+# <from>-<to> in the direction the drone actually travels.
+nb_drones: 2
+start_hub: start 0 0
+end_hub: goal 3 0
+hub: tower 1 0 [zone=restricted color=purple]
+hub: roof 2 0 [color=blue]
+connection: tower-start
+connection: roof-tower
+connection: goal-roof

@@ -24,12 +24,17 @@ class Zone:
     @property
     def movement_cost(self) -> int:
         """Return the number of turns needed to enter this zone."""
-        return RESTRICTED_COST if self.kind == "restricted" else NORMAL_COST
+        return RESTRICTED_COST if self.is_restricted else NORMAL_COST
 
     @property
     def blocked(self) -> bool:
         """Return whether drones are forbidden from entering this zone."""
         return self.kind == "blocked"
+
+    @property
+    def is_restricted(self) -> bool:
+        """Return whether entering this zone takes two turns."""
+        return self.kind == "restricted"
 
     @property
     def is_priority(self) -> bool:
@@ -50,18 +55,10 @@ class Connection:
         """Return an order-independent key for duplicate detection."""
         return frozenset((self.first, self.second))
 
-    def name(self) -> str:
-        """Return the display name used in simulation output."""
-        return f"{self.first}-{self.second}"
-
-    def connects(self, first: str, second: str) -> bool:
-        """Return whether this connection joins two given zones."""
-        return {self.first, self.second} == {first, second}
-
 
 @dataclass
 class MapData:
-    """Complete parsed map and its routing metadata."""
+    """Complete parsed map: zones, connections, start and end."""
 
     drone_count: int
     zones: dict[str, Zone]
@@ -69,58 +66,62 @@ class MapData:
     start: str
     end: str
 
-    def add_connection(self, connection: Connection) -> None:
-        """Add a connection and update both adjacency lists."""
-        self.connections[connection.key] = connection
-        self.zones[connection.first].neighbors.append(connection.second)
-        self.zones[connection.second].neighbors.append(connection.first)
-
     def connection_between(self, first: str, second: str) -> Connection:
         """Return the connection joining two zones."""
         return self.connections[frozenset((first, second))]
 
+    def has_unlimited_capacity(self, zone: str) -> bool:
+        """Return whether a zone ignores max_drones (start and end)."""
+        return zone in (self.start, self.end)
+
+
+@dataclass(frozen=True)
+class Move:
+    """One action a drone performs during one simulation turn.
+
+    Attributes:
+        turn: The simulation turn (1-based) the action happens in.
+        token: The output text after ``D<id>-``: a zone name, or
+            ``<from>-<to>`` while flying toward a restricted zone.
+        origin: The zone the drone was in when the action started.
+        destination: The zone the drone is heading to.
+        in_flight: True when the drone ends this turn on the
+            connection (first half of a restricted move).
+    """
+
+    turn: int
+    token: str
+    origin: str
+    destination: str
+    in_flight: bool = False
+
+    @property
+    def link(self) -> frozenset[str]:
+        """Return the key of the connection used by this action."""
+        return frozenset((self.origin, self.destination))
+
 
 @dataclass
 class Drone:
-    """Mutable state for one drone during simulation.
-
-    Unlike a fixed pre-computed route, a drone only remembers where it
-    currently is. Its next hop is decided turn by turn by the
-    simulation's greedy router, which is what lets different drones end
-    up taking different paths through the map.
-    """
+    """A drone and the flight plan computed for it."""
 
     identifier: int
-    zone: str
-    transit_to: Optional[str] = None
-    transit_connection: Optional[str] = None
-    route: list[str] = field(default_factory=list)
+    moves: list[Move] = field(default_factory=list)
 
-    def __post_init__(self) -> None:
-        """Seed the travel log with the drone's starting zone."""
-        if not self.route:
-            self.route = [self.zone]
+    @property
+    def label(self) -> str:
+        """Return the drone name used in the output, e.g. ``D3``."""
+        return f"D{self.identifier}"
 
-    def is_delivered(self, end: str) -> bool:
-        """Return whether this drone has arrived at the end zone."""
-        return self.transit_to is None and self.zone == end
+    @property
+    def arrival_turn(self) -> int:
+        """Return the turn in which the drone reaches the end zone."""
+        return self.moves[-1].turn if self.moves else 0
 
-    def arrive(self, destination: str) -> None:
-        """Move the drone directly into an adjacent zone."""
-        self.zone = destination
-        self.route.append(destination)
-
-    def begin_transit(self, destination: str, connection_name: str) -> None:
-        """Commit the drone to a two-turn move into a restricted zone."""
-        self.transit_to = destination
-        self.transit_connection = connection_name
-
-    def complete_transit(self) -> str:
-        """Finish an in-flight move and return the drone's new zone."""
-        assert self.transit_to is not None
-        destination = self.transit_to
-        self.zone = destination
-        self.route.append(destination)
-        self.transit_to = None
-        self.transit_connection = None
-        return destination
+    def route(self, start: str) -> list[str]:
+        """Return the zones visited, from the start zone to the end."""
+        visited = [start]
+        for move in self.moves:
+            if not move.in_flight:
+                visited.append(move.destination)
+        return visited

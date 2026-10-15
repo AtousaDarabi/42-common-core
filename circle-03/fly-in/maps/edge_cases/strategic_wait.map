@@ -1,0 +1,16 @@
+# A one-drone bridge and a slower two-turn detour behind a shared hall:
+# drones have to queue in the hall, wait for their slot, and split
+# between the bridge and the detour. 7 turns is the minimum here.
+nb_drones: 6
+start_hub: base 0 0 [color=green]
+end_hub: target 4 0 [color=yellow]
+hub: hall 1 0 [max_drones=3 color=blue]
+hub: bridge 2 0 [color=orange]
+hub: landing 3 0 [zone=priority max_drones=2 color=cyan]
+hub: detour 2 1 [zone=restricted max_drones=2 color=red]
+connection: base-hall [max_link_capacity=3]
+connection: hall-bridge
+connection: bridge-landing
+connection: hall-detour [max_link_capacity=2]
+connection: detour-landing [max_link_capacity=2]
+connection: landing-target [max_link_capacity=2]

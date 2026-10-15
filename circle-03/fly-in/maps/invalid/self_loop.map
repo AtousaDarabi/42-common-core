@@ -1,0 +1,6 @@
+# Invalid: a zone cannot connect to itself
+nb_drones: 1
+start_hub: a 0 0
+end_hub: b 1 0
+connection: a-b
+connection: b-b
