@@ -1,12 +1,25 @@
 #include "codexion.h"
 
-int	main(int argc, char **argv)
+int	error_msg(const char *msg)
 {
-	t_data	data;
+	fprintf(stderr, "Error: %s\n", msg);
+	return (1);
+}
 
-	memset(&data, 0, sizeof(data));
-	if (parse_args(argc, argv, &data.cfg))
+int	main(int ac, char **av)
+{
+	t_data	d;
+
+	memset(&d, 0, sizeof(d));
+	if (parse_args(ac, av, &d.cfg))
 		return (1);
-	printf("config OK: %d coders\n", data.cfg.n);
+	if (sim_init(&d))
+		return (error_msg("initialization failed"));
+	if (run_simulation(&d))
+	{
+		sim_destroy(&d);
+		return (error_msg("could not start the simulation"));
+	}
+	sim_destroy(&d);
 	return (0);
 }

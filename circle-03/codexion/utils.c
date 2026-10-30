@@ -18,7 +18,7 @@ int	is_stopped(t_data *d)
 	int	res;
 
 	pthread_mutex_lock(&d->stop_mutex);
-	res = d->stop;
+	res = d->stop; // 0 means not stopped, 1 means stopped
 	pthread_mutex_unlock(&d->stop_mutex);
 	return (res);
 }

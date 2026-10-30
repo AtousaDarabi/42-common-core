@@ -1,15 +1,18 @@
-"""Static shortest-cost labeling of the map.
+"""Shortest-cost labeling used to steer the multi-path simulation.
 
 No graph library is used (as required by the subject): the priority
-queue is Python's own ``heapq`` and the graph is just the adjacency
-lists stored on ``Zone.neighbors``.
+queue is Python's own ``heapq``, and the graph itself is just the
+adjacency lists already stored on ``Zone.neighbors``.
 
-One Dijkstra run, rooted at the end zone, gives for *every* zone the
-minimum number of turns a drone needs to reach the goal if the map
-were empty (``RouteInfo.distances``). Those numbers are exact lower
-bounds, which makes them the heuristic of the space-time planner in
-``fly_in.planner``. The same run also yields one reference shortest
-route, printed for the user and used as an up-front reachability check.
+The pathfinder does not hand the simulation a single fixed route.
+Instead it computes, once, the cheapest possible remaining cost from
+*every* zone to the end zone (``RouteInfo.distances``). The simulation
+then lets each drone independently walk "downhill" through that cost
+field every turn, picking whichever still-available neighbor reduces
+its remaining cost the most. Because several neighbors can legitimately
+tie for the cheapest remaining cost, drones naturally spread across
+every equally-good route instead of being locked onto one -- the same
+principle networking calls equal-cost multi-path routing.
 """
 
 import heapq
@@ -21,83 +24,55 @@ from .models import MapData
 
 @dataclass
 class RouteInfo:
-    """Routing metadata computed once before planning starts."""
+    """Routing metadata computed once before the simulation starts."""
 
     distances: dict[str, int]
     reference_path: list[str]
-
-    @property
-    def reference_cost(self) -> int:
-        """Return the turn cost of the reference route."""
-        return self.distances[self.reference_path[0]]
 
 
 class Pathfinder:
     """Compute cost-to-goal labels without using a graph library."""
 
     def compute(self, map_data: MapData) -> RouteInfo:
-        """Return per-zone turns-to-goal and one example shortest route.
+        """Return per-zone distances-to-goal and one example route.
 
-        Moving from zone ``a`` into zone ``b`` costs ``b``'s movement
-        cost, so when the search (running backwards from the goal)
-        relaxes ``neighbor -> current`` it adds the cost of entering
-        ``current``.
-
-        Raises:
-            ValueError: If the start or end zone is blocked, or if the
-                end cannot be reached from the start.
+        A single Dijkstra run rooted at the end zone gives the cost to
+        reach the goal from every other zone. Because the graph is
+        undirected and movement cost only depends on the zone being
+        entered, that same run's predecessor table also reconstructs a
+        genuine shortest start-to-end route, which doubles as an
+        up-front reachability check.
         """
-        zones = map_data.zones
-        start, end = map_data.start, map_data.end
-        if zones[start].blocked or zones[end].blocked:
-            raise ValueError("start and end zones cannot be blocked")
+        end = map_data.end
         sequence = count()
         queue: list[tuple[int, int, str]] = [(0, next(sequence), end)]
         distances: dict[str, int] = {end: 0}
-        settled: set[str] = set()
+        previous: dict[str, str] = {}
+        visited: set[str] = set()
         while queue:
             distance, _, current = heapq.heappop(queue)
-            if current in settled:
+            if current in visited:
                 continue
-            settled.add(current)
-            if current == start:
-                # Drones may never re-enter the start zone, so a route
-                # that passes through it is not a real route.
-                continue
-            step = zones[current].movement_cost
-            for neighbor in zones[current].neighbors:
-                if zones[neighbor].blocked or neighbor in settled:
+            visited.add(current)
+            for neighbor in map_data.zones[current].neighbors:
+                zone = map_data.zones[neighbor]
+                if zone.blocked or neighbor in visited:
                     continue
-                new_distance = distance + step
-                if new_distance < distances.get(neighbor, new_distance + 1):
+                new_distance = distance + zone.movement_cost
+                if new_distance < distances.get(neighbor, float("inf")):
                     distances[neighbor] = new_distance
+                    previous[neighbor] = current
                     heapq.heappush(
                         queue, (new_distance, next(sequence), neighbor)
                     )
-        if start not in distances:
+        if map_data.start not in distances:
             raise ValueError("no route exists from start to end")
-        return RouteInfo(distances, self._reference_path(map_data, distances))
+        return RouteInfo(distances, self._rebuild(previous, map_data.start))
 
     @staticmethod
-    def _reference_path(
-        map_data: MapData, distances: dict[str, int]
-    ) -> list[str]:
-        """Walk downhill from the start, preferring priority zones."""
-        path = [map_data.start]
-        while path[-1] != map_data.end:
-            current = path[-1]
-            best: tuple[int, int, str] | None = None
-            for neighbor in map_data.zones[current].neighbors:
-                zone = map_data.zones[neighbor]
-                remaining = distances.get(neighbor)
-                if remaining is None or zone.blocked:
-                    continue
-                if remaining + zone.movement_cost != distances[current]:
-                    continue
-                option = (0 if zone.is_priority else 1, remaining, neighbor)
-                if best is None or option < best:
-                    best = option
-            if best is None:
-                raise ValueError("no route exists from start to end")
-            path.append(best[2])
+    def _rebuild(previous: dict[str, str], start: str) -> list[str]:
+        """Rebuild a start-to-end route from the predecessor table."""
+        path = [start]
+        while path[-1] in previous:
+            path.append(previous[path[-1]])
         return path

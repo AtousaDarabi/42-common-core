@@ -203,22 +203,10 @@ Coder 4 never managed to get two dongles, so they burned out at t=1505 and the s
 - **Memory:** no memory leaks and no crashes (segfault, etc.).
 - **Threads:** one thread per coder, plus one separate thread for the monitor.
 
----
-
-## 11. The README.md File
-
-It must be at the root of the repository, **written in English**, with this content:
-
-1. **First line** (italic): *This project has been created as part of the 42 curriculum by \<login1\>[, \<login2\>...]*
-2. A **Description** section
-3. An **Instructions** section (how to compile and run)
-4. A **Resources** section (references, and a description of what you used AI for)
-5. A **Blocking cases handled** section (deadlock and Coffman's conditions, starvation, cooldown, precise burnout detection, log serialization)
-6. A **Thread synchronization mechanisms** section (use of mutexes and condition variables, with examples of how race conditions are prevented and how coders and the monitor communicate safely)
 
 ---
 
-## 12. Suggested Implementation Path
+## 11. Suggested Implementation Path
 
 1. Parse and validate the arguments
 2. Define the structs (`t_data`, `t_coder`, `t_dongle`)
@@ -232,11 +220,6 @@ It must be at the root of the repository, **written in English**, with this cont
 10. Write the README
 
 ---
-
-## 13. Evaluation Phase
-
-During peer evaluation you may be asked to make a **small change** to your code (for example, changing a behaviour or a log). So you must fully understand your own code. The "AI Instructions" chapter also stresses that you must be able to explain any code you wrote with the help of AI.
-
 
 
  # The Dining Philosophers Problem
@@ -300,3 +283,10 @@ In modern software development:
 Understanding this problem empowers software engineers to design robust concurrent systems that run smoothly without race conditions, resource contention, or system locks.
 
 The animation can be found in [The Dining Philosophers Problem](https://codepen.io/Atousa/full/01a1465d-0620-748a-bb7e-2267126262a1).
+
+
+
+
+norminette *.c *.h
+valgrind --leak-check=full ./codexion 5 800 100 100 100 5 10 fifo
+valgrind --tool=helgrind ./codexion 5 800 100 100 100 5 10 fifo
